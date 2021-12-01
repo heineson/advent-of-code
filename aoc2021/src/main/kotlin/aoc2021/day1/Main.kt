@@ -1,4 +1,33 @@
-package day1
+package aoc2021.day1
+
+fun countDrops(values: List<Long>): Int = values
+    .zipWithNext()
+    .map { (a, b) -> b > a }
+    .count { it }
+
+fun main() {
+    println(countDrops(testInput.map { it.toLong() }))
+    println(countDrops(actualInput.map { it.toLong() }))
+
+    // part 2
+    println(
+        countDrops(
+            testInput
+                .map { it.toLong() }
+                .windowed(3, 1)
+                .map { it.sum() }
+        )
+    )
+
+    println(
+        countDrops(
+            actualInput
+                .map { it.toLong() }
+                .windowed(3, 1)
+                .map { it.sum() }
+        )
+    )
+}
 
 val testInput = """
 199
@@ -12,42 +41,6 @@ val testInput = """
 260
 263
 """.trimIndent().lines()
-
-fun main() {
-    println(testInput
-        .map { it.toLong() }
-        .zipWithNext()
-        .map { (a, b) -> b > a }
-        .count { it })
-    println(
-        actualInput
-        .map { it.toLong() }
-        .zipWithNext()
-        .map { (a, b) -> b > a }
-        .count { it })
-
-    // part 2
-
-    println(
-        testInput
-            .map { it.toLong() }
-            .windowed(3, 1, partialWindows = false)
-            .map { list -> list.sum() }
-            .zipWithNext()
-            .map { (a, b) -> b > a }
-            .count { it }
-    )
-
-    println(
-        actualInput
-            .map { it.toLong() }
-            .windowed(3, 1, partialWindows = false)
-            .map { list -> list.sum() }
-            .zipWithNext()
-            .map { (a, b) -> b > a }
-            .count { it }
-    )
-}
 
 val actualInput = """
     184
