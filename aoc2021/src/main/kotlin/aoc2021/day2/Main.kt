@@ -4,6 +4,8 @@ import aoc2021.parseLines
 
 data class Movement(val direction: String, val value: Int)
 
+data class Pos(val horizontal: Int, val depth: Int, val aim: Int)
+
 fun main() {
     val input = parseLines(actualInput) { it.split(" ") }.map { list -> Movement(list[0], list[1].toInt()) }
 
@@ -16,6 +18,21 @@ fun main() {
         }
     }
     println(result.first * result.second)
+
+    // part 2
+
+    val result2 = input.fold(Pos(0, 0, 0)) { acc, m ->
+        when (m.direction) {
+            "forward" -> acc.copy(
+                horizontal = acc.horizontal + m.value,
+                depth = acc.depth + acc.aim * m.value
+            )
+            "up" -> acc.copy(aim = acc.aim - m.value)
+            "down" -> acc.copy(aim = acc.aim + m.value)
+            else -> throw IllegalStateException("Unsupported movement $m")
+        }
+    }
+    println(result2.horizontal * result2.depth)
 }
 
 val testInput = """
