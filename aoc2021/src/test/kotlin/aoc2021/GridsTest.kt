@@ -28,6 +28,33 @@ internal class GridsTest {
     }
 
     @Test
+    fun testCoordsTo() {
+        val start = Coord(2, 0)
+        assertThat(start.coordsTo(Coord(6, 2))).isEqualTo(listOf(
+            Coord(2,0),
+            Coord(3,0),
+            Coord(4,1),
+            Coord(5,1),
+            Coord(6,2)
+        ))
+        assertThat(start.coordsTo(Coord(6, 2), roundDown = false)).isEqualTo(listOf(
+            Coord(2,0),
+            Coord(3,1),
+            Coord(4,1),
+            Coord(5,2),
+            Coord(6,2)
+        ))
+        assertThat(start.coordsTo(Coord(4, 4))).isEqualTo(listOf(
+            Coord(2,0),
+            Coord(2,1),
+            Coord(3,2),
+            Coord(3,3),
+            Coord(4,4)
+        ))
+        assertThat(start.coordsTo(Coord(4, 4))).isEqualTo(Coord(4,4).coordsTo(start).reversed())
+    }
+
+    @Test
     fun testVect() {
         assertThat(Vect(1, 1).length()).isEqualTo(sqrt(2.0))
         assertThat(Vect(4, 3).length()).isEqualTo(5.0)

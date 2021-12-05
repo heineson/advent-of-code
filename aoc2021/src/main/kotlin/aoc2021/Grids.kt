@@ -1,8 +1,6 @@
 package aoc2021
 
-import kotlin.math.PI
-import kotlin.math.abs
-import kotlin.math.sqrt
+import kotlin.math.*
 
 /****** 2d map utils ********/
 
@@ -44,6 +42,35 @@ data class Coord(val x: Int, val y: Int) {
     }
 
     fun swap(): Coord = copy(x = this.y, y = this.x)
+
+    /**
+     * Get coords (inclusive) from this to [end]. Uses linear interpolation if not a straight line.
+     */
+    fun coordsTo(end: Coord, roundDown: Boolean = true): List<Coord> {
+        fun f(x: Int, start: Coord, end: Coord): Double =
+            start.y + (x - start.x) * ((end.y - start.y).toDouble() / (end.x - start.x))
+
+        val dx = abs(end.x - x)
+        val dy = abs(end.y - y)
+
+        val xRange = if (x < end.x) x..end.x else x downTo end.x
+        val yRange = if (y < end.y) y..end.y else y downTo end.y
+
+        if (dy == 0) {
+            return xRange.map { Coord(it, y) }
+        }
+        if (dx == 0) {
+            return yRange.map { Coord(x, it) }
+        }
+
+        val swap = dx < dy
+        val round = if (roundDown) ::floor else ::ceil
+        return if (swap) {
+            yRange.map { Coord(it, round(f(it, swap(), end.swap())).toInt()).swap() }
+        } else {
+            xRange.map { Coord(it, round(f(it, this, end)).toInt()) }
+        }
+    }
 
     override fun toString(): String {
         return "($x, $y)"

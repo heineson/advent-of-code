@@ -1,35 +1,6 @@
 package aoc2021.day5
 
 import aoc2021.Coord
-import kotlin.math.abs
-import kotlin.math.ceil
-import kotlin.math.floor
-
-fun linearInterpolation(start: Coord, end: Coord, roundDown: Boolean = true): List<Coord> {
-    fun f(x: Int, start: Coord, end: Coord): Double =
-        start.y + (x - start.x) * ((end.y - start.y).toDouble() / (end.x - start.x))
-
-    val dx = abs(end.x - start.x)
-    val dy = abs(end.y - start.y)
-
-    val xRange = if (start.x < end.x) start.x..end.x else start.x downTo end.x
-    val yRange = if (start.y < end.y) start.y..end.y else start.y downTo end.y
-
-    if (dy == 0) {
-        return xRange.map { Coord(it, start.y) }
-    }
-    if (dx == 0) {
-        return yRange.map { Coord(start.x, it) }
-    }
-
-    val swap = dx < dy
-    val round = if (roundDown) ::floor else ::ceil
-    return if (swap) {
-        yRange.map { Coord(it, round(f(it, start.swap(), end.swap())).toInt()).swap() }
-    } else {
-        xRange.map { Coord(it, round(f(it, start, end)).toInt()) }
-    }
-}
 
 fun main() {
     actualData.let { data ->
@@ -40,10 +11,10 @@ fun main() {
         }
         val onlyStraightLines = endpoints.filter { it.first.x == it.second.x || it.first.y == it.second.y }
 
-        val straightLineCoords = onlyStraightLines.map { linearInterpolation(it.first, it.second) }.flatten().groupingBy { it }.eachCount()
+        val straightLineCoords = onlyStraightLines.map { it.first.coordsTo(it.second) }.flatten().groupingBy { it }.eachCount()
         println(straightLineCoords.values.count { it > 1 })
         println("\nPart2\n")
-        val lineCoords = endpoints.map { linearInterpolation(it.first, it.second) }.flatten().groupingBy { it }.eachCount()
+        val lineCoords = endpoints.map { it.first.coordsTo(it.second) }.flatten().groupingBy { it }.eachCount()
         println(lineCoords.values.count { it > 1 })
     }
 }
