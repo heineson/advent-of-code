@@ -1,5 +1,6 @@
 package aoc2021
 
+import aoc2021.day4.Board
 import java.io.File
 
 /****** Input data utils *******/
@@ -12,16 +13,21 @@ fun <T> readFile(filename: String = "./data.txt", lineParser: (line: String) -> 
     return parseLines(File(filename).readLines(), lineParser)
 }
 
-fun readLinesIntoTokens(lines: List<String>, groupSeparatorLine: String = "", tokenSeparator: String = " "): List<List<String>> {
+fun readLinesIntoTokens(lines: List<String>, groupSeparatorLine: String = "", tokenSeparator: String = " ", tokenSeparatorRegex: Regex? = null, trimLines: Boolean = false): List<List<String>> {
     val groups = mutableListOf<List<String>>()
     var group = mutableListOf<String>()
     lines.forEachIndexed { i, s ->
         run {
-            if (s == groupSeparatorLine) {
+            val line = if (trimLines) s.trim() else s
+            if (line == groupSeparatorLine) {
                 groups.add(group)
                 group = mutableListOf()
             } else {
-                group.addAll(s.split(tokenSeparator))
+                if (tokenSeparatorRegex != null) {
+                    group.addAll(line.split(tokenSeparatorRegex))
+                } else {
+                    group.addAll(line.split(tokenSeparator))
+                }
                 // In case final line is not a "separator line"
                 if (i == lines.size - 1) {
                     groups.add(group)
