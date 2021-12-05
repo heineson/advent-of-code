@@ -43,6 +43,8 @@ data class Coord(val x: Int, val y: Int) {
         return seq.takeWhile { predicate(it) }.toList()
     }
 
+    fun swap(): Coord = copy(x = this.y, y = this.x)
+
     override fun toString(): String {
         return "($x, $y)"
     }
