@@ -1,26 +1,32 @@
 package aoc2021.day6
 
-fun cycle(counters: List<Int>): List<Int> {
-    var new = 0
-    return counters.map { c ->
-        when (c) {
+fun cycle(groups: Map<Int, Long>): Map<Int, Long> {
+    val result = mutableMapOf<Int, Long>()
+    groups.entries.forEach { (key, count) ->
+        when (key) {
             0 -> {
-                new++
-                6
+                result[6] = result.getOrDefault(6, 0) + count
+                result[8] = result.getOrDefault(8, 0) + count
             }
-            else -> c - 1
+            else -> result[key - 1] = result.getOrDefault(key - 1, 0) + count
         }
-    } + List(new) { 8 }
+    }
+    return result
 }
 
 fun main() {
-    var current = actualData
+    var current = actualData.groupingBy { it }.eachCount().mapValues { it.value.toLong() }
     (1..80).map {
         current = cycle(current)
     }
-    println("After 80 days: ${current.size}") // 350149
+    println("After 80 days: ${current.values.sum()}") // 350149
     println("\nPart2:\n")
 
+    current = actualData.groupingBy { it }.eachCount().mapValues { it.value.toLong() }
+    (1..256).map {
+        current = cycle(current)
+    }
+    println("After 256 days: ${current.values.sum()}") // 1590327954513
 }
 
 val testData = "3,4,3,1,2".split(",").map { it.toInt() }
