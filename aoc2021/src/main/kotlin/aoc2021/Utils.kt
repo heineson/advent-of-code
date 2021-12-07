@@ -1,7 +1,7 @@
 package aoc2021
 
-import aoc2021.day4.Board
 import java.io.File
+import kotlin.math.abs
 
 /****** Input data utils *******/
 
@@ -43,7 +43,7 @@ fun readFileIntoTokens(filename: String = "./data.txt", groupSeparatorLinePatter
     return readLinesIntoTokens(File(filename).readLines(), groupSeparatorLinePattern, tokenSeparator)
 }
 
-/****** extensions *******/
+/****** collection extensions *******/
 
 fun <E> Iterable<E>.updateElement(index: Int, newElem: E) = mapIndexed { i, existing ->  if (i == index) newElem else existing }
 
@@ -57,3 +57,15 @@ fun <E> List<E>.circularSubList(fromIndex: Int, toIndex: Int): List<E> {
     return if (realTo < realFrom) this.subList(realFrom, this.size) + this.subList(0, realTo)
     else this.subList(realFrom, realTo)
 }
+
+/****** Math utils ******/
+
+// Greatest common divisor
+tailrec fun gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b)
+fun gcd(ints: Collection<Int>): Int = ints.reduce { a, b -> gcd(a, b) }
+fun List<Int>.gcd(): Int = gcd(this)
+
+// Least common multiple
+fun lcm(a: Int, b: Int): Int = abs(a * b) / gcd(a, b)
+fun lcm(ints: Collection<Int>): Int = ints.reduce { a, b -> lcm(a, b) }
+fun List<Int>.lcm(): Int = lcm(this)

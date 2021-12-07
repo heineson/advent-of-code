@@ -37,7 +37,7 @@ data class Coord(val x: Int, val y: Int) {
     )
 
     fun inDirectionWhile(d: Vect, predicate: (c: Coord) -> Boolean): List<Coord> {
-        val seq: Sequence<Coord> = generateSequence(this + d, { it + d })
+        val seq: Sequence<Coord> = generateSequence(this + d) { it + d }
         return seq.takeWhile { predicate(it) }.toList()
     }
 

@@ -41,6 +41,22 @@ internal class UtilsKtTest {
         assertThat(list.circularSubList(7, 2)).isEqualTo(listOf(8, 9, 1, 2))
     }
 
+    @Test
+    fun gcd() {
+        assertThat(gcd(20, 8)).isEqualTo(4)
+        assertThat(gcd(42, 56)).isEqualTo(14)
+
+        assertThat(gcd(listOf(2, 4, 6, 8))).isEqualTo(2)
+    }
+
+    @Test
+    fun lcm() {
+        assertThat(lcm(4, 6)).isEqualTo(12)
+        assertThat(lcm(21, 6)).isEqualTo(42)
+
+        assertThat(lcm(listOf(2, 7, 3, 9, 4))).isEqualTo(252)
+    }
+
     private val lines1 = """
     abc
 
