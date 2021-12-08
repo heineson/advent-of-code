@@ -6,14 +6,52 @@ fun parse(l: String): Data {
     return Data(parts[0].split(" "), parts[1].split(" "))
 }
 
-fun part1(outputs: List<List<String>>): Int {
+fun part1(outputs: List<List<String>>): List<String> {
     val sizes = listOf(2, 3, 4, 7)
-    return outputs.flatten().count { it.length in sizes }
+    return outputs.flatten().filter { it.length in sizes }
+}
+
+val numbers = mapOf(
+    setOf(1,2,3,5,6,7) to 0,
+    setOf(3,6) to 1,
+    setOf(1,3,4,5,7) to 2,
+    setOf(1,3,4,6,7) to 3,
+    setOf(2,3,4,6) to 4,
+    setOf(1,2,4,6,7) to 5,
+    setOf(1,2,4,5,6,7) to 6,
+    setOf(1,3,6) to 7,
+    setOf(1,2,3,4,5,6,7) to 8,
+    setOf(1,2,3,4,6,7) to 9,
+)
+
+fun part2(data: Data): Int {
+    val one = data.patterns.single { it.length == 2 }
+    val four = data.patterns.single { it.length == 4 }
+    val seven = data.patterns.single { it.length == 3 }
+    val occurrences = data.patterns.joinToString("").groupingBy { it }.eachCount()
+
+    val map = mutableMapOf<Int, Char>()
+    map[1] = seven.single { it !in one }
+    map[3] = one.single { occurrences[it] == 8 }
+    map[6] = one.single { occurrences[it] == 9 }
+    map[2] = occurrences.filter { it.key !in map.values && it.value == 6 }.keys.single()
+    map[5] = occurrences.filter { it.key !in map.values && it.value == 4 }.keys.single()
+    map[4] = occurrences.filter { it.key !in map.values && it.key in four }.keys.single()
+    map[7] = occurrences.filter { it.key !in map.values }.keys.single()
+
+    val patternMapping = map.entries.associateBy({ it.value }) { it.key }
+
+    val segments = data.output.map { it.map { c -> patternMapping[c]!! }.toSet() }
+    val numberString = segments.joinToString("") { numbers[it].toString() }
+    return numberString.toInt()
 }
 
 fun main() {
     val data = actualData.map { parse(it) }
-    println("1, 4, 7, 8 count: ${part1(data.map { it.output })}") // 473
+    println("1, 4, 7, 8 count: ${part1(data.map { it.output }).count()}") // 473
+
+    println("\nPart2:\n")
+    println(data.sumOf { part2(it) }) // 1097568
 }
 
 val testData = """
@@ -28,6 +66,7 @@ val testData = """
     egadfb cdbfeg cegd fecab cgb gbdefca cg fgcdab egfdb bfceg | gbdfcae bgc cg cgb
     gcafb gcf dcaebfg ecagb gf abcdeg gaef cafbge fdbac fegbdc | fgae cfgab fg bagce
 """.trimIndent().lines()
+val testData2 = listOf("acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab | cdfeb fcadb cdfeb cdbaf")
 
 val actualData = """
     dg debg edgfc afbgcd efdbgc gdc bfdceag bfdec febcad gfaec | dcg bdaegfc egbd dcgfe
