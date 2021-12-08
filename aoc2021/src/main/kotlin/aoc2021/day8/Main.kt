@@ -11,7 +11,7 @@ fun part1(outputs: List<List<String>>): List<String> {
     return outputs.flatten().filter { it.length in sizes }
 }
 
-val numbers = mapOf(
+val segmentsToNumber = mapOf(
     setOf(1,2,3,5,6,7) to 0,
     setOf(3,6) to 1,
     setOf(1,3,4,5,7) to 2,
@@ -42,7 +42,7 @@ fun part2(data: Data): Int {
     val patternMapping = map.entries.associateBy({ it.value }) { it.key }
 
     val segments = data.output.map { it.map { c -> patternMapping[c]!! }.toSet() }
-    val numberString = segments.joinToString("") { numbers[it].toString() }
+    val numberString = segments.joinToString("") { segmentsToNumber[it].toString() }
     return numberString.toInt()
 }
 
