@@ -4,14 +4,8 @@ import aoc2021.Coord
 import aoc2021.Grid2d
 import java.util.*
 
-fun Grid2d<Int>.cardinalNeighbors(c: Coord): List<Coord> {
-    val maxX = this.getDimensionRanges().first.last
-    val maxY = this.getDimensionRanges().second.last
-    return c.cardinalNeighbors().filter { it.x >= 0 && it.y >= 0 && it.x <= maxX && it.y <= maxY}
-}
-
 fun Grid2d<Int>.lowPoints() = getCoords().filter { c ->
-    val ns = this.cardinalNeighbors(c)
+    val ns = this.cardinalNeighborsWithinLimits(c)
     ns.all { n -> this.getValue(n) > this.getValue(c) }
 }
 
@@ -28,7 +22,7 @@ fun findBasin(lowPoint: Coord, grid: Grid2d<Int>): Set<Coord> {
         val c = queue.poll()
         result.add(c)
 
-        grid.cardinalNeighbors(c).forEach { n ->
+        grid.cardinalNeighborsWithinLimits(c).forEach { n ->
             val nVal = grid.getValue(n)
             if (!visited.contains(n) && nVal != 9 && nVal > grid.getValue(c)) {
                 visited.add(n)

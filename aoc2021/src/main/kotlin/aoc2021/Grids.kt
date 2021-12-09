@@ -1,5 +1,6 @@
 package aoc2021
 
+import java.util.*
 import kotlin.math.*
 
 /****** 2d map utils ********/
@@ -125,6 +126,18 @@ open class Grid2d<T> {
             data.entries.filter { it.key.y == yr.first }.map { Pair(it.key, it.value) },
             data.entries.filter { it.key.x == xr.first }.map { Pair(it.key, it.value) }
         )
+    }
+
+    fun cardinalNeighborsWithinLimits(c: Coord): List<Coord> {
+        val maxX = data.keys.maxOfOrNull { it.x } ?: 0
+        val maxY = data.keys.maxOfOrNull { it.y } ?: 0
+        return c.cardinalNeighbors().filter { it.x >= 0 && it.y >= 0 && it.x <= maxX && it.y <= maxY}
+    }
+
+    fun surroundingNeighborsWithinLimits(c: Coord): List<Coord> {
+        val maxX = data.keys.maxOfOrNull { it.x } ?: 0
+        val maxY = data.keys.maxOfOrNull { it.y } ?: 0
+        return c.surroundingNeighbors().filter { it.x >= 0 && it.y >= 0 && it.x <= maxX && it.y <= maxY}
     }
 
     open fun printElement(e: T): Char {
