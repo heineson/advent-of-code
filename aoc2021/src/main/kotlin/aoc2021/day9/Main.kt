@@ -2,11 +2,42 @@ package aoc2021.day9
 
 import aoc2021.Coord
 import aoc2021.Grid2d
+import java.util.*
 
 fun Grid2d<Int>.cardinalNeighbors(c: Coord): List<Coord> {
     val maxX = this.getDimensionRanges().first.last
     val maxY = this.getDimensionRanges().second.last
     return c.cardinalNeighbors().filter { it.x >= 0 && it.y >= 0 && it.x <= maxX && it.y <= maxY}
+}
+
+fun Grid2d<Int>.lowPoints() = getCoords().filter { c ->
+    val ns = this.cardinalNeighbors(c)
+    ns.all { n -> this.getValue(n) > this.getValue(c) }
+}
+
+fun findBasin(lowPoint: Coord, grid: Grid2d<Int>): Set<Coord> {
+    val result = mutableSetOf<Coord>()
+
+    val visited = mutableSetOf<Coord>()
+    val queue = LinkedList<Coord>()
+
+    visited.add(lowPoint)
+    queue.add(lowPoint)
+
+    while (queue.size != 0) {
+        val c = queue.poll()
+        result.add(c)
+
+        grid.cardinalNeighbors(c).forEach { n ->
+            val nVal = grid.getValue(n)
+            if (!visited.contains(n) && nVal != 9 && nVal > grid.getValue(c)) {
+                visited.add(n)
+                queue.add(n)
+            }
+        }
+    }
+
+    return result
 }
 
 fun main() {
@@ -15,11 +46,17 @@ fun main() {
         data.forEachIndexed { y, line ->
             line.forEachIndexed { x, char -> grid[Coord(x, y)] = char.toString().toInt() }
         }
-        val lowPoints = grid.getCoords().filter { c ->
-            val ns = grid.cardinalNeighbors(c)
-            ns.all { n -> grid.getValue(n) > grid.getValue(c) }
+        println("Risk: ${grid.lowPoints().sumOf { grid.getValue(it) + 1 }}") // 468
+    }
+
+    actualData.let { data ->
+        val grid = Grid2d<Int>()
+        data.forEachIndexed { y, line ->
+            line.forEachIndexed { x, char -> grid[Coord(x, y)] = char.toString().toInt() }
         }
-        println("Risk: ${lowPoints.sumOf { grid.getValue(it) + 1 }}")
+
+        val basins = grid.lowPoints().map { p -> findBasin(p, grid) }
+        println(basins.map { it.size }.sortedDescending().take(3).fold(1) { a, s -> a * s }) // 1280496
     }
 }
 
