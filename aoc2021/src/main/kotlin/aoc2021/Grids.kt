@@ -1,6 +1,5 @@
 package aoc2021
 
-import java.util.*
 import kotlin.math.*
 
 /****** 2d map utils ********/
@@ -108,18 +107,20 @@ open class Grid2d<T> {
     }
 
     fun getValue(c: Coord): T = data.getValue(c)
-    fun getCoords() = data.keys
-    fun getValues() = data.values
-    fun getEntries() = data.entries
+    fun getCoords(): Set<Coord> = data.keys
+    fun getValues(): Set<T> = data.values.toSet()
+    fun getEntries(): Set<Map.Entry<Coord, T>> = data.entries
+    fun getEntries(filter: (Map.Entry<Coord, T>) -> Boolean): Set<Map.Entry<Coord, T>> =
+        data.entries.filter(filter).toSet()
 
-    fun getDimensionRanges(): Pair<IntRange, IntRange> {
+    fun dimensionRanges(): Pair<IntRange, IntRange> {
         val xr: IntRange = (data.keys.minOfOrNull { it.x } ?: 0)..(data.keys.maxOfOrNull { it.x } ?: 0)
         val yr: IntRange = (data.keys.minOfOrNull { it.y } ?: 0)..(data.keys.maxOfOrNull { it.y } ?: 0)
         return Pair(xr, yr)
     }
 
     fun getSides(): List<List<Pair<Coord, T>>> {
-        val (xr, yr) = getDimensionRanges()
+        val (xr, yr) = dimensionRanges()
         return listOf(
             data.entries.filter { it.key.y == yr.last }.map { Pair(it.key, it.value) },
             data.entries.filter { it.key.x == xr.last }.map { Pair(it.key, it.value) },
@@ -129,15 +130,17 @@ open class Grid2d<T> {
     }
 
     fun cardinalNeighborsWithinLimits(c: Coord): List<Coord> {
-        val maxX = data.keys.maxOfOrNull { it.x } ?: 0
-        val maxY = data.keys.maxOfOrNull { it.y } ?: 0
-        return c.cardinalNeighbors().filter { it.x >= 0 && it.y >= 0 && it.x <= maxX && it.y <= maxY}
+        val (xr, yr) = dimensionRanges()
+        return c.cardinalNeighbors().filter {
+            it.x >= xr.first && it.y >= yr.first && it.x <= xr.last && it.y <= yr.last
+        }
     }
 
-    fun surroundingNeighborsWithinLimits(c: Coord): List<Coord> {
-        val maxX = data.keys.maxOfOrNull { it.x } ?: 0
-        val maxY = data.keys.maxOfOrNull { it.y } ?: 0
-        return c.surroundingNeighbors().filter { it.x >= 0 && it.y >= 0 && it.x <= maxX && it.y <= maxY}
+    fun surroundingNeighborsWithinLimits(c: Coord, filter: (co: Coord) -> Boolean = { true }): List<Coord> {
+        val (xr, yr) = dimensionRanges()
+        return c.surroundingNeighbors().filter {
+            it.x >= xr.first && it.y >= yr.first && it.x <= xr.last && it.y <= yr.last
+        }.filter(filter)
     }
 
     open fun printElement(e: T): Char {
@@ -153,7 +156,7 @@ open class Grid2d<T> {
     }
 
     override fun toString(): String {
-        val (xr, yr) = getDimensionRanges()
+        val (xr, yr) = dimensionRanges()
         var r = ""
         for (yi in yr) {
             for (xi in xr) {
