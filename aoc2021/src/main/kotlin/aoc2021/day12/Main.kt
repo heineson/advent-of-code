@@ -19,15 +19,49 @@ fun findPaths(graph: Graph, visited: Set<String>, path: List<String>, endPoint: 
 
     while (queue.size != 0) {
         val v = queue.poll()
+        val newVisited = if (v[0].isUpperCase()) visited else visited + v
+
         return if (v == endPoint) {
             acc + listOf(path)
         } else {
             val more = graph.neighbors(v).filter { !visited.contains(it) }.map { n ->
                 queue.add(n)
-                val newVisited = if (v[0].isUpperCase()) visited else visited + v
                 findPaths(graph, newVisited, path + listOf(n), endPoint, acc)
             }.flatten()
             acc + more
+        }
+    }
+    return acc
+}
+
+fun String.isSmallCave() = this.isNotEmpty() && !this[0].isUpperCase()
+
+fun findPaths2(
+    graph: Graph,
+    visited: Set<String>,
+    path: List<String>,
+    endPoint: String,
+    acc: Set<List<String>>,
+    smallCavesVisitedOnce: Set<String>,
+    smallTwice: Boolean
+): Set<List<String>> {
+    val queue = LinkedList<String>()
+    queue.add(path.last())
+
+    while (queue.size != 0) {
+        val v = queue.poll()
+        val newVisited = if (!v.isSmallCave()) visited else
+            if (smallTwice || v in smallCavesVisitedOnce) visited + v + smallCavesVisitedOnce else visited
+        val newSmallTwice = smallTwice || (v.isSmallCave() && v != "start" && v in newVisited)
+        val newVisitedSmallCaves = if (v.isSmallCave()) smallCavesVisitedOnce + v else smallCavesVisitedOnce
+
+        return if (v == endPoint) {
+            acc + listOf(path)
+        } else {
+            acc + graph.neighbors(v).filter { !newVisited.contains(it) }.map { n ->
+                queue.add(n)
+                findPaths2(graph, newVisited, path + listOf(n), endPoint, acc, newVisitedSmallCaves, newSmallTwice)
+            }.flatten()
         }
     }
     return acc
@@ -39,6 +73,12 @@ fun main() {
         val graph = Graph(edges.toSet())
         println(findPaths(graph, setOf("start"), listOf("start"), "end", setOf()).size) // 4573
     }
+
+    actualData.let { data ->
+        val edges = data.map { it.split('-') }.map { Edge(it[0], it[1]) }
+        val graph = Graph(edges.toSet())
+        println(findPaths2(graph, setOf("start"), listOf("start"), "end", setOf(), setOf(), false).size) // 117509
+    }
 }
 
 val testData = """
@@ -49,6 +89,19 @@ val testData = """
     b-d
     A-end
     b-end
+""".trimIndent().lines()
+
+val testData2 = """
+dc-end
+HN-start
+start-kj
+dc-start
+dc-HN
+LN-dc
+HN-end
+kj-sa
+kj-HN
+kj-dc
 """.trimIndent().lines()
 
 val actualData = """
