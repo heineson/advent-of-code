@@ -95,7 +95,11 @@ data class Vect(val dx: Int, val dy: Int) {
     }
 }
 
-open class Grid2d<T> {
+open class Grid2d<T>() {
+    constructor(coords: Collection<Coord>, initVal: T) : this() {
+        coords.forEach { c -> data[c] = initVal }
+    }
+
     private val data = mutableMapOf<Coord, T>()
 
     operator fun set(c: Coord, d: T) {
@@ -151,7 +155,7 @@ open class Grid2d<T> {
         } else if (e is Char) {
             e
         } else {
-            '.'
+            '#'
         }
     }
 
