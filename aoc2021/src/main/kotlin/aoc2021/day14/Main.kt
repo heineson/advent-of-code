@@ -1,10 +1,22 @@
 package aoc2021.day14
 
 fun step(template: String, rules: Map<String, String>): String {
-    val start = System.currentTimeMillis()
     val pairs = template.windowed(2)
     return pairs.fold("X") { acc, pair -> acc.dropLast(1) + pair[0] + rules[pair] + pair[1] }
-        .also { println("Step with ${pairs.size} took ${System.currentTimeMillis() - start}") }
+}
+
+fun step2(pairFrequencies: Map<String, Long>, letterFrequencies: Map<Char, Long>, translator: Map<String, String>): Pair<Map<String, Long>, Map<Char, Long>> {
+    val newLetters = mutableMapOf<Char, Long>()
+    val newPairs = pairFrequencies.map { e ->
+        val newSection = translator.getValue(e.key)
+        newLetters[newSection[1]] = newLetters.getOrDefault(newSection[1], 0L) + e.value
+        newSection.windowed(2).associateWith { e.value }
+    }
+    val newPairFreq = newPairs.fold(emptyMap<String, Long>()) { acc, map ->
+        (acc.keys + map.keys).associateWith { acc.getOrDefault(it, 0L) + map.getOrDefault(it, 0L) }
+    }
+    val newLetterFreq = (letterFrequencies.keys + newLetters.keys).associateWith { key -> letterFrequencies.getOrDefault(key, 0) + newLetters.getOrDefault(key, 0) }
+    return Pair(newPairFreq, newLetterFreq)
 }
 
 fun main() {
@@ -12,12 +24,22 @@ fun main() {
         val ruleMap = data.second.associate { l -> l.split(" -> ").let { Pair(it[0], it[1]) } }
         val result = (0..9).fold(data.first) { acc, _ -> step(acc, ruleMap) }//.also { println(it) }
         val occurrences = result.groupingBy { it }.eachCount()
-        println("${occurrences.maxOf { it.value } - occurrences.minOf { it.value }}") // 3411 too low
+        println("${occurrences.maxOf { it.value } - occurrences.minOf { it.value }}") // 3411
     }
 
+    actualData.let { data ->
+        val ruleMap = data.second.associate { l -> l.split(" -> ").let { Pair(it[0], it[1]) } }
+        val initialPairFreq = data.first.windowed(2).groupingBy { it }.eachCount().mapValues { it.value.toLong() }
+        val initialLetterFreq = data.first.groupingBy { it }.eachCount().mapValues { it.value.toLong() }
+        val translator = ruleMap.mapValues { it.key[0] + it.value + it.key[1] }
+
+        val result = (0..39).fold(Pair(initialPairFreq, initialLetterFreq)) { acc, _ -> step2(acc.first, acc.second, translator) }
+        println("${result.second.maxOf { it.value } - result.second.minOf { it.value }}") // 7477815755570
+    }
 }
 
-val testData = Pair("NNCB", """
+val testData = Pair(
+    "NNCB", """
     CH -> B
     HH -> N
     CB -> H
@@ -34,9 +56,11 @@ val testData = Pair("NNCB", """
     BC -> B
     CC -> N
     CN -> C
-""".trimIndent().lines())
+""".trimIndent().lines()
+)
 
-val actualData = Pair("SNPVPFCPPKSBNSPSPSOF", """
+val actualData = Pair(
+    "SNPVPFCPPKSBNSPSPSOF", """
     CF -> N
     NK -> B
     SF -> B
@@ -137,4 +161,5 @@ val actualData = Pair("SNPVPFCPPKSBNSPSPSOF", """
     PS -> N
     HS -> K
     KO -> N
-""".trimIndent().lines())
+""".trimIndent().lines()
+)
