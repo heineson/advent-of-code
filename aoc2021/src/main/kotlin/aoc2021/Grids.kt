@@ -147,6 +147,8 @@ open class Grid2d<T>() {
         }.filter(filter)
     }
 
+    fun pathValues(path: List<Coord>): List<T> = path.map { this.getValue(it) }
+
     open fun printElement(e: T): Char {
         return if (e is Int || e is Long) {
             if (e != 0) '#' else '.'

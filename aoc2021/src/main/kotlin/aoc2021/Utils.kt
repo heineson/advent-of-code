@@ -58,6 +58,14 @@ fun <E> List<E>.circularSubList(fromIndex: Int, toIndex: Int): List<E> {
     else this.subList(realFrom, realTo)
 }
 
+fun <E> Map<E, Long>.inc(key: E, valueToAdd: Long): Map<E, Long> =
+    if (key in keys) mapValues { e -> if (key == e.key) e.value + valueToAdd else e.value }
+    else this + mapOf(key to valueToAdd)
+
+fun <E> MutableMap<E, Long>.mutableInc(key: E, valueToAdd: Long) {
+    this[key] = this.getOrDefault(key, 0) + valueToAdd
+}
+
 /****** Math utils ******/
 
 // Greatest common divisor

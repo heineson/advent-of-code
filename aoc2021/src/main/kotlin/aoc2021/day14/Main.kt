@@ -1,5 +1,7 @@
 package aoc2021.day14
 
+import aoc2021.mutableInc
+
 fun step(template: String, rules: Map<String, String>): String {
     val pairs = template.windowed(2)
     return pairs.fold("X") { acc, pair -> acc.dropLast(1) + pair[0] + rules[pair] + pair[1] }
@@ -9,7 +11,7 @@ fun step2(pairFrequencies: Map<String, Long>, letterFrequencies: Map<Char, Long>
     val newLetters = mutableMapOf<Char, Long>()
     val newPairs = pairFrequencies.map { e ->
         val newSection = translator.getValue(e.key)
-        newLetters[newSection[1]] = newLetters.getOrDefault(newSection[1], 0L) + e.value
+        newLetters.mutableInc(newSection[1], e.value)
         newSection.windowed(2).associateWith { e.value }
     }
     val newPairFreq = newPairs.fold(emptyMap<String, Long>()) { acc, map ->
