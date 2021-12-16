@@ -41,7 +41,7 @@ fun main() {
     }
 }
 
-val testData = """
+private val testData = """
     00100
     11110
     10110
@@ -56,7 +56,7 @@ val testData = """
     01010
 """.trimIndent().lines()
 
-val actualData = """
+private val actualData = """
     010011001001
     110101011110
     111111000101

@@ -81,7 +81,7 @@ fun main() {
     }
 }
 
-val testData = """
+private val testData = """
     start-A
     start-b
     A-c
@@ -104,7 +104,7 @@ kj-HN
 kj-dc
 """.trimIndent().lines()
 
-val actualData = """
+private val actualData = """
     fw-ll
     end-dy
     tx-fw

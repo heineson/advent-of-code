@@ -40,7 +40,7 @@ fun main() {
     }
 }
 
-val testData = Pair(
+private val testData = Pair(
     "NNCB", """
     CH -> B
     HH -> N
@@ -61,7 +61,7 @@ val testData = Pair(
 """.trimIndent().lines()
 )
 
-val actualData = Pair(
+private val actualData = Pair(
     "SNPVPFCPPKSBNSPSPSOF", """
     CF -> N
     NK -> B

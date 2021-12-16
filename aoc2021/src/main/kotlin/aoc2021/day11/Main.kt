@@ -57,7 +57,7 @@ fun main() {
     }
 }
 
-val testData = """
+private val testData = """
     5483143223
     2745854711
     5264556173
@@ -70,7 +70,7 @@ val testData = """
     5283751526
 """.trimIndent().lines()
 
-val actualData = """
+private val actualData = """
     5723573158
     3154748563
     4783514878

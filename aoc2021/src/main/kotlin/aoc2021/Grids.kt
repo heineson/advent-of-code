@@ -161,17 +161,19 @@ open class Grid2d<T>() {
         }
     }
 
-    override fun toString(): String {
+    fun printGrid(f: (e: T) -> Char): String {
         val (xr, yr) = dimensionRanges()
         var r = ""
         for (yi in yr) {
             for (xi in xr) {
-                r += data[Coord(xi, yi)]?.let { printElement(it) } ?: '.'
+                r += data[Coord(xi, yi)]?.let { f(it) } ?: '.'
             }
             r += "\n"
         }
         return r
     }
+
+    override fun toString(): String = printGrid { printElement(it) }
 
     override fun equals(other: Any?): Boolean {
         if (this === other) return true

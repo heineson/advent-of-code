@@ -39,7 +39,7 @@ fun main() {
     }
 }
 
-val testData = """
+private val testData = """
     6,10
     0,14
     9,10
@@ -64,7 +64,7 @@ val testData2 = """
     fold along x=5
 """.trimIndent().lines().map { it.replace("fold along ", "").split('=') }.map { Pair(it[0], it[1].toInt()) }
 
-val actualData = """
+private val actualData = """
     95,196
     500,420
     681,633

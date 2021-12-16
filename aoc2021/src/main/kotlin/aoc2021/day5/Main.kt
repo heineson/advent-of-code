@@ -19,7 +19,7 @@ fun main() {
     }
 }
 
-val testData = """
+private val testData = """
     0,9 -> 5,9
     8,0 -> 0,8
     9,4 -> 3,4
@@ -32,7 +32,7 @@ val testData = """
     5,5 -> 8,2
 """.trimIndent().lines()
 
-val actualData = """
+private val actualData = """
     964,133 -> 596,133
     920,215 -> 920,976
     123,528 -> 123,661
