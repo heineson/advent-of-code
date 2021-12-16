@@ -19,11 +19,11 @@ val hexToBinary = mapOf(
     'F' to "1111",
 )
 
+data class Packet(val version: Int, val id: Int, val literal: Long?, val packets: List<Packet>, val bitCount: Int)
+
 fun readInput(hex: String): String = hex.map { hexToBinary.getValue(it) }.joinToString("")
 
-fun version(packet: String): Int = packet.take(3).toInt(2)
-fun id(packet: String): Int = packet.take(3).toInt(2)
-fun literalData(data: String, version: Int, id: Int): Pair<Int, Packet> {
+fun literalData(data: String, version: Int, id: Int): Packet {
     var done = false
     val numbers = data
         .windowed(5, 5)
@@ -32,80 +32,93 @@ fun literalData(data: String, version: Int, id: Int): Pair<Int, Packet> {
             done = it[0] == '0'
             !curr
         }
-    return Pair(
-        numbers.sumOf { it.length },
-        Packet(version, id, numbers.joinToString("") { it.drop(1) }.toLong(2), emptyList())
+
+    return Packet(
+        version,
+        id,
+        numbers.joinToString("") { it.drop(1) }.toLong(2),
+        emptyList(),
+        numbers.sumOf { it.length }
     )
 }
 
 fun getSubpackets(data: String): String {
-  val bits = data.take(15).toInt(2)
-  return data.drop(15).take(bits)
+    val bits = data.take(15).toInt(2)
+    return data.drop(15).take(bits)
 }
+
 fun containedPacketsCount(data: String): Int = data.take(11).toInt(2)
 
-data class Packet(val version: Int, val id: Int, val literal: Long?, val packets: List<Packet>)
-
-fun readPacket(packet: String): Pair<Int, Packet> {
-    val version = version(packet)
-    val id = id(packet.drop(3))
+fun readPacket(packet: String): Packet {
+    val version = packet.take(3).toInt(2)
+    val id = packet.drop(3).take(3).toInt(2)
     val data = packet.drop(6)
     return when (id) {
         4 -> literalData(data, version, id)
-        0 -> subpackets(data, version, id).let { Pair(it.first, it.second.copy(literal = it.second.packets.mapNotNull { s -> s.literal }.sum())) }
-        1 -> subpackets(data, version, id).let { Pair(it.first, it.second.copy(literal = it.second.packets.mapNotNull { s -> s.literal }.reduce { acc, l -> acc * l })) }
-        2 -> subpackets(data, version, id).let { Pair(it.first, it.second.copy(literal = it.second.packets.mapNotNull { s -> s.literal }.minOrNull()?.toLong())) }
-        3 -> subpackets(data, version, id).let { Pair(it.first, it.second.copy(literal = it.second.packets.mapNotNull { s -> s.literal }.maxOrNull()?.toLong())) }
-        5 -> subpackets(data, version, id).let { Pair(it.first, it.second.copy(literal = it.second.packets.mapNotNull { s -> s.literal }.reduce { acc, l -> if (acc > l) 1L else 0L } )) }
-        6 -> subpackets(data, version, id).let { Pair(it.first, it.second.copy(literal = it.second.packets.mapNotNull { s -> s.literal }.reduce { acc, l -> if (acc < l) 1L else 0L } )) }
-        7 -> subpackets(data, version, id).let { Pair(it.first, it.second.copy(literal = it.second.packets.mapNotNull { s -> s.literal }.reduce { acc, l -> if (acc == l) 1L else 0L } )) }
+        0 -> subpackets(data, version, id).let {
+            it.copy(literal = it.packets.mapNotNull { s -> s.literal }.sum())
+        }
+        1 -> subpackets(data, version, id).let {
+            it.copy(literal = it.packets.mapNotNull { s -> s.literal }.reduce { acc, l -> acc * l })
+        }
+        2 -> subpackets(data, version, id).let {
+            it.copy(literal = it.packets.mapNotNull { s -> s.literal }.minOrNull()?.toLong())
+        }
+        3 -> subpackets(data, version, id).let {
+            it.copy(literal = it.packets.mapNotNull { s -> s.literal }.maxOrNull()?.toLong())
+        }
+        5 -> subpackets(data, version, id).let {
+            it.copy(literal = it.packets.mapNotNull { s -> s.literal }
+                .reduce { acc, l -> if (acc > l) 1L else 0L })
+        }
+        6 -> subpackets(data, version, id).let {
+            it.copy(literal = it.packets.mapNotNull { s -> s.literal }
+                .reduce { acc, l -> if (acc < l) 1L else 0L })
+        }
+        7 -> subpackets(data, version, id).let {
+            it.copy(literal = it.packets.mapNotNull { s -> s.literal }
+                .reduce { acc, l -> if (acc == l) 1L else 0L })
+        }
         else -> throw IllegalStateException()
-    }.also { println("$packet = $it") }
+    }
 }
 
-private fun subpackets(data: String, version: Int, id: Int): Pair<Int, Packet> {
+private fun subpackets(data: String, version: Int, id: Int): Packet {
     var readBits = 0
     return when (data.take(1).toInt(2).also { readBits++ }) {
         0 -> getSubpackets(data.drop(readBits)).also { readBits += 15 }.let { subpackets ->
             var subpacketReadBits = 0
             val results = mutableListOf<Packet>()
             while (subpacketReadBits < subpackets.length) {
-                val r = readPacket(subpackets.drop(subpacketReadBits))
-                subpacketReadBits += r.first + 6
-                results.add(r.second)
+                val r = readPacket(subpackets.drop(subpacketReadBits)).also { subpacketReadBits += it.bitCount + 6 }
+                results.add(r)
             }
             readBits += subpacketReadBits
-            Pair(readBits, Packet(version, id, null, results))
+            Packet(version, id, null, results, readBits)
         }
         else -> {
-            val packets = containedPacketsCount(data.drop(readBits)).also { readBits += 11 }
-            val results = mutableListOf<Packet>()
-            (1..packets).forEach {
-                val r = readPacket(data.drop(readBits))
-                readBits += r.first + 6
-                results.add(r.second)
+            val packetCount = containedPacketsCount(data.drop(readBits)).also { readBits += 11 }
+            val results = (1..packetCount).map {
+                readPacket(data.drop(readBits)).also { readBits += it.bitCount + 6 }
             }
-            Pair(readBits, Packet(version, id, null, results))
+            Packet(version, id, null, results, readBits)
         }
     }
 }
 
-fun <T> subpacketOp(packet: Packet, op: (p: Packet) -> T): List<T> =
-    listOf(op(packet)) + packet.packets.flatMap { subpacketOp(it, op) }
-fun versionCnt(packet: Packet): Int = subpacketOp(packet) { it.version }.sum()
+fun versionCnt(packet: Packet): Int = packet.version + packet.packets.sumOf { versionCnt(it) }
 
 fun main() {
     actualData.let { data ->
         val input = readInput(data)
         val packets = readPacket(input)
-        println("${packets}")
-        println(versionCnt(packets.second)) // 938
+        println(versionCnt(packets)) // 938
     }
 
     actualData.let { data ->
         val input = readInput(data)
         val packets = readPacket(input)
-        println(packets.second.literal) // 1495959086337
+        println(packets.literal) // 1495959086337
     }
 }
 
