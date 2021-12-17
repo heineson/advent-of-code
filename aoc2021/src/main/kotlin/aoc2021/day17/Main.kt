@@ -22,7 +22,7 @@ fun highestY(initial: Pair<Coord, Vect>, target: Pair<IntRange, IntRange>): Int?
     return if (cs.size == LIMIT)
         null
     else
-        cs.maxOf { it.first.y }.also { println("Hit target after ${i - 1} steps") }
+        cs.maxOf { it.first.y }
 }
 
 fun main() {
@@ -33,12 +33,13 @@ fun main() {
         val yr = IntRange(ys[0].toInt(), ys[1].toInt())
 
         val res = mutableListOf<Int>()
-        (0..xr.first/2).forEach { xv ->
+        (0..xr.last).forEach { xv ->
             (yr.first..-yr.first).forEach { yv ->
                 highestY(Pair(Coord(0, 0), Vect(xv, yv)), Pair(xr, yr))?.also { res.add(it) }
             }
         }
-        println(res.maxOf { it })
+        println(res.maxOf { it }) // 8256
+        println(res.size) // 2326
     }
 }
 
