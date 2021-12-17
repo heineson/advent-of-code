@@ -3,22 +3,31 @@ package aoc2021.day15
 import aoc2021.Coord
 import aoc2021.Grid2d
 import java.util.*
+import kotlin.math.roundToInt
+
+fun prepopVisited(grid: Grid2d<Int>): Set<Coord> {
+    val m: Int = (grid.dimensionRanges().first.last * (1.0/3)).roundToInt()
+    return grid.getCoords()
+        .filter { (x, y) -> x > (y + m) || x < (y - m) }
+        .toSet()
+}
 
 fun calcRisk(grid: Grid2d<Int>): Map<Coord, Int> {
     val risks = grid.getCoords().associateWith { Int.MAX_VALUE }.toMutableMap()
     risks[Coord(0, 0)] = 0
-    val visited = mutableSetOf<Coord>()
+    val visited = prepopVisited(grid)
+    println(visited.size)
     val queue = LinkedList<Coord>()
     queue.add(Coord(0, 0))
 
     while (queue.size != 0) {
         val v = queue.poll()
 
-        grid.cardinalNeighborsWithinLimits(v).forEach { n ->
+        grid.cardinalNeighborsWithinLimits(v).filter { v !in visited }.forEach { n ->
             val updatedRisk = risks[v]!! + grid[n]!!
             if (updatedRisk < risks[n]!!) {
                 risks[n] = updatedRisk
-                visited.add(n)
+                //visited.add(n)
                 queue.add(n)
             }
         }
@@ -32,11 +41,31 @@ fun main() {
         val grid = Grid2d<Int>()
         data.forEachIndexed { y, line -> line.forEachIndexed { x, c -> grid[Coord(x, y)] = c.digitToInt() } }
         val (xr, yr) = grid.dimensionRanges()
+        val start = System.currentTimeMillis()
+        println(calcRisk(grid).getValue(Coord(xr.last, yr.last))) // 696
+        println(System.currentTimeMillis() - start)
+    }
+
+    actualData.let { data ->
+        val grid = Grid2d<Int>()
+        val h = data.size
+        val w = data[0].length
+        data.forEachIndexed { y, line ->
+            line.forEachIndexed { x, c ->
+                (0..4).forEach { y2 ->
+                    (0..4).forEach { x2 ->
+                        val base = c.digitToInt()
+                        grid[Coord(x + (x2 * w), y + (y2 * h))] = (base + x2 + y2 - 1) % 9 + 1
+                    }
+                }
+            }
+        }
+        val (xr, yr) = grid.dimensionRanges()
         println(calcRisk(grid).getValue(Coord(xr.last, yr.last)))
     }
 }
 
-val testData = """
+private val testData = """
     1163751742
     1381373672
     2136511328
@@ -49,7 +78,7 @@ val testData = """
     2311944581
 """.trimIndent().lines()
 
-val actualData = """
+private val actualData = """
     3996784658117628994128674793592948674996135999716798799597994816649896869881999376877897577598577893
     5162866989892998461756948126658937998528697973996994513958898519289755665881798489977739589893667684
     9391999493479887866499999923988792923197991878177169185211951175589129175698886827671831888124449872
