@@ -100,6 +100,10 @@ open class Grid2d<T>() {
         coords.forEach { c -> data[c] = initVal }
     }
 
+    constructor(initData: Map<Coord, T>) : this() {
+        initData.forEach { data[it.key] = it.value }
+    }
+
     private val data = mutableMapOf<Coord, T>()
 
     operator fun set(c: Coord, d: T) {
@@ -172,6 +176,9 @@ open class Grid2d<T>() {
         }
         return r
     }
+
+    fun copy() = Grid2d(data)
+    fun mapValues(mapValues: (e: Map.Entry<Coord, T>) -> T) = Grid2d(data.mapValues(mapValues))
 
     override fun toString(): String = printGrid { printElement(it) }
 
