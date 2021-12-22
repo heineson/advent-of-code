@@ -1,8 +1,48 @@
 package aoc2021.day22
 
 import aoc2021.Coord3
+import kotlin.math.abs
+import kotlin.math.max
+import kotlin.math.min
 
 data class RebootStep(val on: Boolean, val xr: IntRange, val yr: IntRange, val zr: IntRange)
+
+data class Cube(val min: Coord3, val max: Coord3) {
+    init {
+        require(min.x <= max.x && min.y <= max.y && min.z <= max.z) {
+            "min.x <= max.x && min.y <= max.y && min.z <= max.z"
+        }
+    }
+
+    fun intersection(other: Cube): Cube? {
+        val x1 = max(min.x, other.min.x)
+        val y1 = max(min.y, other.min.y)
+        val z1 = max(min.z, other.min.z)
+
+        val x2 = min(max.x, other.max.x)
+        val y2 = min(max.y, other.max.y)
+        val z2 = min(max.z, other.max.z)
+
+        val dx = x2 - x1
+        val dy = y2 - y1
+        val dz = z2 - z1
+        if (dx < 0 || dy < 0 || dz < 0) {
+            return null
+        }
+        return Cube(Coord3(x1, y1, z1), Coord3(x2, y2, z2))
+    }
+
+    fun toRanges(): Triple<IntRange, IntRange, IntRange> = Triple(
+        min.x..max.x,
+        min.y..max.y,
+        min.z..max.z
+    )
+
+    companion object {
+        fun fromRanges(xr: IntRange, yr: IntRange, zr: IntRange) =
+            Cube(Coord3(xr.first, yr.first, zr.first), Coord3(xr.last, yr.last, zr.last))
+    }
+}
 
 fun parse(ls: List<String>): List<RebootStep> = ls.map { l ->
     val on = l.startsWith("on")
@@ -11,47 +51,29 @@ fun parse(ls: List<String>): List<RebootStep> = ls.map { l ->
     RebootStep(on, ranges[0], ranges[1], ranges[2])
 }
 
-fun step(cubes: Set<Coord3>, rebootStep: RebootStep): Set<Coord3> {
-    val r = mutableSetOf<Coord3>()
-    for (x in rebootStep.xr) {
-        for (y in rebootStep.yr) {
-            for (z in rebootStep.zr) {
-                r.add(Coord3(x, y, z))
-            }
-        }
+fun step(enabledRegions: Set<Triple<IntRange, IntRange, IntRange>>, rebootStep: RebootStep): Set<Triple<IntRange, IntRange, IntRange>> {
+    val (on, xr, yr, zr) = rebootStep
+    val stepCube = Cube.fromRanges(xr, yr, zr).also { println("stepCube: $it") }
+    val stepCubeSize = abs(xr.last - xr.first + 1) * abs(yr.last - yr.first + 1) * abs(zr.last - zr.first + 1)
+
+    val overlaps = enabledRegions.mapNotNull { (xre, yre, zre) ->
+        val ce = Cube.fromRanges(xre, yre, zre)
+        ce.intersection(stepCube)
     }
-    return if (rebootStep.on) cubes + r else cubes - r
+    return setOf(stepCube.toRanges())
 }
 
 fun main() {
-    println(parse(actualData.take(20)).fold(emptySet<Coord3>()) { acc, s -> step(acc, s) }.size) // 653798
+    println(parse(testData.take(20)).fold(emptySet<Triple<IntRange, IntRange, IntRange>>()) { acc, s -> step(acc, s) }.size) // 653798
 
-    println(parse(testData2).fold(emptySet<Coord3>()) { acc, s -> step(acc, s) }.size)
+    //println(parse(testData2).fold(emptySet<Coord3>()) { acc, s -> step(acc, s) }.size)
 }
 
 private val testData = """
-    on x=-20..26,y=-36..17,z=-47..7
-    on x=-20..33,y=-21..23,z=-26..28
-    on x=-22..28,y=-29..23,z=-38..16
-    on x=-46..7,y=-6..46,z=-50..-1
-    on x=-49..1,y=-3..46,z=-24..28
-    on x=2..47,y=-22..22,z=-23..27
-    on x=-27..23,y=-28..26,z=-21..29
-    on x=-39..5,y=-6..47,z=-3..44
-    on x=-30..21,y=-8..43,z=-13..34
-    on x=-22..26,y=-27..20,z=-29..19
-    off x=-48..-32,y=26..41,z=-47..-37
-    on x=-12..35,y=6..50,z=-50..-2
-    off x=-48..-32,y=-32..-16,z=-15..-5
-    on x=-18..26,y=-33..15,z=-7..46
-    off x=-40..-22,y=-38..-28,z=23..41
-    on x=-16..35,y=-41..10,z=-47..6
-    off x=-32..-23,y=11..30,z=-14..3
-    on x=-49..-5,y=-3..45,z=-29..18
-    off x=18..30,y=-20..-8,z=-3..13
-    on x=-41..9,y=-7..43,z=-33..15
-    on x=-54112..-39298,y=-85059..-49293,z=-27449..7877
-    on x=967..23432,y=45373..81175,z=27513..53682
+    on x=10..12,y=10..12,z=10..12
+    on x=11..13,y=11..13,z=11..13
+    off x=9..11,y=9..11,z=9..11
+    on x=10..10,y=10..10,z=10..10
 """.trimIndent().lines()
 
 private val testData2 = """
