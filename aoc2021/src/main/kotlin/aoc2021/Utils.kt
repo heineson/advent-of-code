@@ -51,6 +51,7 @@ fun <E> List<E>.getCircularIndex(index: Int) = if (index < 0) this.size - (-inde
 
 fun <E> List<E>.circularGet(index: Int) = this[this.getCircularIndex(index)]
 
+// Returns a view of the portion of this list between the specified fromIndex (inclusive) and toIndex (exclusive).
 fun <E> List<E>.circularSubList(fromIndex: Int, toIndex: Int): List<E> {
     val realFrom = this.getCircularIndex(fromIndex)
     val realTo = this.getCircularIndex(toIndex - 1) + 1

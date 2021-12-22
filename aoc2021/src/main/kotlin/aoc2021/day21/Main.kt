@@ -12,6 +12,7 @@ fun turn(ps: Pair<Player, Player>, board: List<Int>, die: Iterator<Int>, limit: 
         val pos = board.circularGet(p.pos + rolls.sum() - 1)
         return Player(pos, p.score + pos)
     }
+
     val p1 = playerTurn(ps.first)
     val p2 = if (p1.score >= limit) ps.second else playerTurn(ps.second)
     return Pair(p1, p2)
@@ -31,10 +32,14 @@ data class Player2(val pos: Int, val score: Int, val universes: Long)
 
 fun turn2(ps: Pair<Player2, Player2>, board: List<Int>, limit: Int): List<Pair<Player2, Player2>> {
     fun playerTurn(p: Player2): List<Player2> {
-        return listOf(1, 2, 3).map {
-            val pos = board.circularGet(p.pos + it - 1)
-            Player2(pos, p.score + pos, p.universes)
-        }
+        return listOf(1, 2, 3).map { d1 ->
+            listOf(1, 2, 3).map { d2 ->
+                listOf(1, 2, 3).map { d3 ->
+                    val pos = board.circularGet(p.pos + d1 + d2 + d3 - 1)
+                    Player2(pos, p.score + pos, p.universes)
+                }
+            }.flatten()
+        }.flatten()
     }
     val p1s: List<Player2> = playerTurn(ps.first)
     val newPs: List<Pair<Player2, Player2>> = p1s.map { p1 ->
@@ -44,17 +49,22 @@ fun turn2(ps: Pair<Player2, Player2>, board: List<Int>, limit: Int): List<Pair<P
     return newPs
 }
 
+data class CacheKey(val p1: Pair<Int, Int>, val p2: Pair<Int, Int>)
+private val cache = mutableMapOf<CacheKey,  Pair<Player2, Player2>>()
+
 fun play2(ps: Pair<Player2, Player2>, board: List<Int>): Pair<Player2, Player2> {
     return if (ps.first.score >= 21) {
         ps.copy(first = ps.first.copy(universes = ps.first.universes + 1))
     } else if (ps.second.score >= 21) {
         ps.copy(second = ps.second.copy(universes = ps.second.universes + 1))
     } else {
-        turn2(ps, board, 21).map { play2(it, board) }.reduce { (accP1, accP2), (p1, p2) ->
-            Pair(
-                accP1.copy(universes = accP1.universes + p1.universes),
-                accP2.copy(universes = accP2.universes + p2.universes)
-            )
+        cache.getOrPut(CacheKey(Pair(ps.first.pos, ps.first.score), Pair(ps.second.pos, ps.second.score))) {
+            turn2(ps, board, 21).map { play2(it, board) }.reduce { (accP1, accP2), (p1, p2) ->
+                Pair(
+                    accP1.copy(universes = accP1.universes + p1.universes),
+                    accP2.copy(universes = accP2.universes + p2.universes)
+                )
+            }
         }
     }
 }
@@ -66,15 +76,15 @@ fun main() {
         val init = Pair(Player(data.first, 0), Player(data.second, 0))
 
         val (p1, p2) = play(init, board, die)
-        println( dieCalls * if (p1.score >= 1000) p2.score else p1.score ) // 1006866
+        println(dieCalls * if (p1.score >= 1000) p2.score else p1.score) // 1006866
     }
 
-    testData.let { data ->
+    actualData.let { data ->
         val board = List(10) { it + 1 }
         val init = Pair(Player2(data.first, 0, 0), Player2(data.second, 0, 0))
 
         val res = play2(init, board)
-        println(res)
+        println(res) // 273042027784929 wins
     }
 }
 
