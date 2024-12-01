@@ -20,6 +20,13 @@ fun main() {
         .sumOf { (first, second) -> abs(first - second) }
 
     println(result)
+
+    part2(list1, list2)
+}
+
+fun part2(list1: List<Int>, list2: List<Int>) {
+    val result = list1.sumOf { it * list2.count { item -> item == it } }
+    println(result)
 }
 
 val testInput = """
