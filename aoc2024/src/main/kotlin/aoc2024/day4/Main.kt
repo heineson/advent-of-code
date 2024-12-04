@@ -1,15 +1,12 @@
 package aoc2024.day4
 
 fun main() {
-    val allLines = part1(actualInput)
-    val regex = Regex("XMAS")
-    var count = 0
-    allLines.filter { it.contains("XMAS") }.forEach { regex.findAll(it).forEach { _ -> count++ } }
+    part1(actualInput) // 2560
+    part2(actualInput) // 1910
 
-    println(count)
 }
 
-fun part1(data: List<String>): List<String> {
+fun part1(data: List<String>) {
     val n = data.size
 
     val verticals = mutableListOf<String>()
@@ -30,8 +27,8 @@ fun part1(data: List<String>): List<String> {
         val sb1 = StringBuilder()
         val sb2 = StringBuilder()
         for (i in 0 until n - d) {
-            sb1.append(data[i][i + d])  // From top-left corner to bottom-right
-            sb2.append(data[i + d][i])  // Starting from the first column after initial
+            sb1.append(data[i][i + d])
+            sb2.append(data[i + d][i])
         }
         diagonals.add(sb1.toString())
         if (d > 0) diagonals.add(sb2.toString())
@@ -42,16 +39,51 @@ fun part1(data: List<String>): List<String> {
         val sb3 = StringBuilder()
         val sb4 = StringBuilder()
         for (i in 0 until n - d) {
-            sb3.append(data[i][n - 1 - (i + d)])  // From top-right corner to bottom-left
-            sb4.append(data[i + d][n - 1 - i])    // Starting from the last row upwards
+            sb3.append(data[i][n - 1 - (i + d)])
+            sb4.append(data[i + d][n - 1 - i])
         }
         diagonals.add(sb3.toString())
         if (d > 0) diagonals.add(sb4.toString())
     }
 
-    return data + data.map { it.reversed() } +
+    val allLines = data + data.map { it.reversed() } +
             diagonals + diagonals.map { it.reversed() } +
             verticals + verticals.map { it.reversed() }
+
+    val regex = Regex("XMAS")
+    var count = 0
+    allLines.filter { it.contains("XMAS") }.forEach { regex.findAll(it).forEach { _ -> count++ } }
+
+    println(count)
+}
+
+fun part2(data: List<String>) {
+    val n = data.size
+    val blocks = mutableListOf<List<String>>()
+
+    for (rowStart in 0..(n - 3)) {
+        for (colStart in 0..(n - 3)) {
+            val block = mutableListOf<String>()
+            for (i in 0..2) {
+                block.add(data[rowStart + i].substring(colStart, colStart + 3))
+            }
+            blocks.add(block)
+        }
+    }
+
+    fun lines(block: List<String>): List<String> {
+        val ls = listOf(
+            block[0][0].toString() + block[1][1].toString() + block[2][2].toString(),
+            block[0][2].toString() + block[1][1].toString() + block[2][0].toString(),
+        )
+        return ls + ls.map { it.reversed() }
+    }
+
+    val result = blocks.count {
+        lines(it).count { l -> l.contains("MAS") } > 1
+    }
+
+    println(result)
 }
 
 val testInput = """
