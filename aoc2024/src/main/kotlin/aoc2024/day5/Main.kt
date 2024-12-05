@@ -27,25 +27,22 @@ fun part1(input1: List<String>, updates: List<String>): List<List<Int>> {
         }
     }
 
-    val correctUpdates = updates
+    val (correctUpdates, incorrectUpdates) = updates
         .map { it.split(",").map { i -> i.toInt() } }
-        .filter { validUpdate(it) }
+        .partition { validUpdate(it) }
 
     println(correctUpdates.sumOf { it[it.size / 2] })
 
-    return updates
-        .map { it.split(",").map { i -> i.toInt() } }
-        .filter { !validUpdate(it) }
+    return incorrectUpdates
 }
 
 fun validUpdate(pages: List<Int>): Boolean {
+    fun testPage(page: Int, b: List<Int>, a: List<Int>): Boolean =
+        before[page]?.containsAll(b) ?: true && after[page]?.containsAll(a) ?: true
+
     return pages.withIndex().all {
         page -> testPage(page.value, pages.subList(0, page.index), pages.subList(page.index + 1, pages.size))
      }
-}
-
-fun testPage(page: Int, b: List<Int>, a: List<Int>): Boolean {
-    return before[page]?.containsAll(b) ?: true && after[page]?.containsAll(a) ?: true
 }
 
 fun part2(incorrectUpdates: List<List<Int>>) {
