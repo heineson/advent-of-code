@@ -1,13 +1,14 @@
 package aoc2024.day5
 
 fun main() {
-    part1(actualInput, actualInput2) // 4959
+    val incorrectUpdates = part1(actualInput1, actualInput2) // 4959
+    part2(incorrectUpdates) // 4655
 }
 
 val after = mutableMapOf<Int, List<Int>>()
-val before = mutableMapOf<Int, List<Int>>()
 
-fun part1(input1: List<String>, updates: List<String>) {
+val before = mutableMapOf<Int, List<Int>>()
+fun part1(input1: List<String>, updates: List<String>): List<List<Int>> {
     val rules = input1.map { line -> line.split("|") }.map { Pair(it[0].toInt(), it[1].toInt()) }
 
     rules.forEach { (f, s) ->
@@ -30,21 +31,41 @@ fun part1(input1: List<String>, updates: List<String>) {
         .map { it.split(",").map { i -> i.toInt() } }
         .filter { validUpdate(it) }
 
-//    println(correctUpdates)
     println(correctUpdates.sumOf { it[it.size / 2] })
+
+    return updates
+        .map { it.split(",").map { i -> i.toInt() } }
+        .filter { !validUpdate(it) }
 }
 
 fun validUpdate(pages: List<Int>): Boolean {
-    println(pages)
     return pages.withIndex().all {
         page -> testPage(page.value, pages.subList(0, page.index), pages.subList(page.index + 1, pages.size))
      }
 }
 
 fun testPage(page: Int, b: List<Int>, a: List<Int>): Boolean {
-    println("$b, $page, $a")
-
     return before[page]?.containsAll(b) ?: true && after[page]?.containsAll(a) ?: true
+}
+
+fun part2(incorrectUpdates: List<List<Int>>) {
+    val fixedUpdates: List<List<Int>> = incorrectUpdates.map { sort(it) }
+
+    println(fixedUpdates.sumOf { it[it.size / 2] })
+}
+
+fun sort(update: List<Int>): List<Int> {
+    val comparator = Comparator<Int> { a, b ->
+        if(before[a]?.contains(b) != false) {
+            return@Comparator -1
+        }
+        if(after[a]?.contains(b) != false) {
+            return@Comparator 1
+        }
+        a.compareTo(b)
+    }
+
+    return update.sortedWith(comparator)
 }
 
 val testInput1 = """
@@ -79,7 +100,7 @@ val testInput2 = """
     97,13,75,29,47
 """.trimIndent().lines()
 
-val actualInput = """
+val actualInput1 = """
     87|26
     31|18
     31|47
