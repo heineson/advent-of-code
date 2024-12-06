@@ -50,7 +50,8 @@ fun part1(input: List<String>) {
     var guard = Guard(guardPos, Dir.U)
 
     val visited = mutableSetOf(guardPos)
-    while (guard.pos.x in 0..input.first().lastIndex && guard.pos.y in 0..input.lastIndex) {
+    val (xs, ys) = grid.dimensionRanges()
+    while (guard.pos.x in xs && guard.pos.y in ys) {
         guard = guard.move(grid)
         visited.add(guard.pos)
     }
