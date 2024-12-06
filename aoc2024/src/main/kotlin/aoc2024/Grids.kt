@@ -90,7 +90,7 @@ data class Vect(val dx: Int, val dy: Int) {
             1 -> if (d == Rotation.CW) Vect(dy, -dx) else Vect(-dy, dx)
             2 -> Vect(-dx, -dy)
             3 -> if (d == Rotation.CCW) Vect(dy, -dx) else Vect(-dy, dx)
-            else -> throw IllegalStateException("$steps % 4 should never end up here")
+            else -> error("$steps % 4 should never end up here")
         }
     }
 }
@@ -153,16 +153,11 @@ open class Grid2d<T>() {
 
     fun pathValues(path: List<Coord>): List<T> = path.map { this.getValue(it) }
 
-    open fun printElement(e: T): Char {
-        return if (e is Int || e is Long) {
-            if (e != 0) '#' else '.'
-        } else if (e is Boolean) {
-            if (e) '#' else '.'
-        } else if (e is Char) {
-            e
-        } else {
-            '#'
-        }
+    open fun printElement(e: T): Char = when (e) {
+        is Int, is Long -> if (e != 0) '#' else '.'
+        is Boolean -> if (e) '#' else '.'
+        is Char -> e
+        else -> '#'
     }
 
     fun printGrid(f: (e: T) -> Char): String {
