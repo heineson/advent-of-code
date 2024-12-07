@@ -7,14 +7,15 @@ fun main() {
         val nums = line.split(": ", " ").map { it.toLong() }
         Eq(nums.first(), nums.drop(1))
     }
-    part1(eqs)
+    part1(eqs) // 4364915411363
+    part2(eqs) // 38322057216320
 }
 
 fun part1(eqs: List<Eq>) {
     fun test(eq: Eq): Boolean {
         var operands = listOf("")
         for (i in 0 until eq.ops.size - 1) {
-            operands = loop(operands)
+            operands = operands.flatMap { listOf("$it*", "$it+") }
         }
         //println(operands)
         return operands.any { ops ->
@@ -27,8 +28,25 @@ fun part1(eqs: List<Eq>) {
     println(eqs.filter { test(it) }.sumOf { it.res })
 }
 
-fun loop(ls: List<String>): List<String> = ls.flatMap { inc(it) }
-fun inc(a: String): List<String> = listOf("$a*", "$a+")
+fun part2(eqs: List<Eq>) {
+    fun test(acc: Long, op: Char, remaining: List<Long>, res: Long): Boolean {
+        if(acc == res && remaining.isEmpty()) return true
+        if(acc > res || remaining.isEmpty()) return false
+
+        val newAcc = when(op) {
+            '+' -> acc + remaining.first()
+            '*' -> acc * remaining.first()
+            '|' -> "$acc${remaining.first()}".toLong()
+            else -> 0
+        }
+
+        return test(newAcc, '+', remaining.drop(1), res)
+                || test(newAcc, '*', remaining.drop(1), res)
+                || test(newAcc, '|', remaining.drop(1), res)
+    }
+
+    println(eqs.filter { test(0, '+', it.ops, it.res) }.sumOf { it.res })
+}
 
 val testInput = """
     190: 10 19
