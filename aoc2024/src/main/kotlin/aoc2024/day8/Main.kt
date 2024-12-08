@@ -15,6 +15,7 @@ fun main() {
     }
 
     part1(grid) // 291
+    part2(grid) // 1015
 }
 
 fun part1(grid: Grid2d<Char>) {
@@ -40,6 +41,45 @@ fun part1(grid: Grid2d<Char>) {
     }
     println(antinodes.size)
 }
+
+fun part2(grid: Grid2d<Char>) {
+    val types = grid.getUniqueValues().filter { it != '.' }.toSet()
+    val antinodes = mutableSetOf<Coord>()
+
+    fun dist(c1: Coord, c2: Coord): Vect = Vect(c2.x - c1.x, c2.y - c1.y)
+
+    types.forEach { type ->
+        val coords = grid.getCoords()
+        val antennas = coords.filter { grid[it] == type }
+
+        val (xs, ys) = grid.dimensionRanges()
+
+        fun extracted(c: Coord, d1: Vect) {
+            var pos = c
+            while (pos.x in xs && pos.y in ys) {
+                antinodes.add(pos)
+                pos += d1
+                if (pos == c) break
+            }
+        }
+
+        coords.forEach { c ->
+            antennas.forEach { a ->
+                val d1 = dist(c, a)
+                if (antennas.any { dist(c, it) == d1 * 2 }) {
+                    extracted(c, d1)
+                }
+
+                val d2 = dist(a, c)
+                if (antennas.any { dist(it, c) == d2 * 2 }) {
+                    extracted(c, d2)
+                }
+            }
+        }
+    }
+    println(antinodes.size)
+}
+
 
 val testInput = """
     ............

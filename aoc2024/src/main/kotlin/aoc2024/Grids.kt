@@ -9,6 +9,7 @@ fun toRadians(deg: Double): Double = (deg * PI) / 180
 
 data class Coord(val x: Int, val y: Int) {
     operator fun plus(v: Vect): Coord = Coord(x + v.dx, y + v.dy)
+    operator fun minus(v: Vect): Coord = Coord(x - v.dx, y - v.dy)
     operator fun plus(c: Coord): Coord = Coord(x + c.x, y + c.y)
 
     fun up(): Coord = Coord(x, y + 1)
