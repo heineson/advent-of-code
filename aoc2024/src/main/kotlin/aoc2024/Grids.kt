@@ -116,7 +116,7 @@ open class Grid2d<T>() {
 
     fun getValue(c: Coord): T = data.getValue(c)
     fun getCoords(): Set<Coord> = data.keys
-    fun getValues(): Set<T> = data.values.toSet()
+    fun getUniqueValues(): Set<T> = data.values.toSet()
     fun getEntries(): Set<Map.Entry<Coord, T>> = data.entries
     fun getEntries(filter: (Map.Entry<Coord, T>) -> Boolean): Set<Map.Entry<Coord, T>> =
         data.entries.filter(filter).toSet()
