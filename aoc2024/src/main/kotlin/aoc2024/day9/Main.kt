@@ -2,43 +2,73 @@ package aoc2024.day9
 
 data class Block(val fileId: Int) {
     override fun toString(): String = if (fileId < 0) "." else fileId.toString()
+    fun isEmpty(): Boolean = fileId == -1
+    fun isFile(): Boolean = fileId > -1
 }
 
-// part1: 6337367222422
-
 fun main() {
-    val blocks: MutableList<Block> = actualInput.map { it.digitToInt() }.flatMapIndexed { index, i ->
+    val blocks: List<Block> = actualInput.map { it.digitToInt() }.flatMapIndexed { index, i ->
         return@flatMapIndexed if (index % 2 == 0) {
             MutableList(i) { Block(index / 2) }
         } else {
             MutableList(i) { Block(-1) }
         }
-    }.toMutableList()
+    }
 
-    fun swap(blocks: MutableList<Block>, i: Int, j: Int) {
-        val tmp = blocks[i]
-        blocks[i] = blocks[j]
-        blocks[j] = tmp
+    part1(blocks.toMutableList()) // 6337367222422
+    part2(blocks.toMutableList()) // 6361380647183
+}
+
+fun part1(blocks: MutableList<Block>) {
+    fun isCompleted(blocks: List<Block>): Boolean {
+        val indexOfFirstEmpty = blocks.indexOfFirst { it.isEmpty() }
+        val indexOfLastFile = blocks.indexOfLast { it.isFile() }
+        return indexOfFirstEmpty == indexOfLastFile + 1
     }
 
     while (!isCompleted(blocks)) {
-        val indexOfFirstEmpty = blocks.indexOfFirst { it.fileId == -1 }
-        val indexOfLastFile = blocks.indexOfLast { it.fileId > -1 }
+        val indexOfFirstEmpty = blocks.indexOfFirst { it.isEmpty() }
+        val indexOfLastFile = blocks.indexOfLast { it.isFile() }
         swap(blocks, indexOfFirstEmpty, indexOfLastFile)
     }
 
     println(checksum(blocks))
 }
 
-fun isCompleted(blocks: List<Block>): Boolean {
-    val indexOfFirstEmpty = blocks.indexOfFirst { it.fileId == -1 }
-    val indexOfLastFile = blocks.indexOfLast { it.fileId > -1 }
-    return indexOfFirstEmpty == indexOfLastFile + 1
+fun part2(blocks: MutableList<Block>) {
+    val ids = blocks.filter { it.isFile() }.map { it.fileId }.toSortedSet().reversed()
+
+    fun findFirstSpace(blocks: List<Block>, neededBlocks: Int): Int {
+        val freeIndices = blocks.mapIndexed { index, block -> if (block.isEmpty()) index else null }.filterNotNull()
+        val blockIndex = freeIndices.windowed(neededBlocks)
+            .map { if (it.last() == it.first() + neededBlocks - 1) return it.first() else -1 }
+            .firstOrNull { it > -1 }
+
+        return blockIndex ?: -1
+    }
+
+    ids.forEach { id ->
+        val indexOfFile = blocks.indexOfFirst { it.fileId == id }
+        val neededBlocks = blocks.count { it.fileId == id }
+        val spaceIndex = findFirstSpace(blocks, neededBlocks)
+        if (spaceIndex > -1 && spaceIndex < indexOfFile) {
+            repeat(neededBlocks) {
+                swap(blocks, spaceIndex + it, indexOfFile + it)
+            }
+        }
+    }
+    println(checksum(blocks))
 }
 
-fun checksum(blocks: MutableList<Block>): Long {
-    return blocks.takeWhile { it.fileId > -1 }.foldIndexed(0L) { index, acc, block ->
-        acc + block.fileId * index
+fun swap(blocks: MutableList<Block>, i: Int, j: Int) {
+    val tmp = blocks[i]
+    blocks[i] = blocks[j]
+    blocks[j] = tmp
+}
+
+fun checksum(blocks: List<Block>): Long {
+    return blocks.foldIndexed(0L) { index, acc, block ->
+        acc + (if (block.isFile()) block.fileId else 0) * index
     }
 }
 
