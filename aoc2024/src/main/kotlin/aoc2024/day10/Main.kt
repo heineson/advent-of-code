@@ -1,50 +1,49 @@
 package aoc2024.day10
 
+import aoc2024.Coord
+import aoc2024.Grid2d
+
 fun main() {
-    val paths = findPaths(actualInput)
+    val grid = Grid2d(actualInput) { it.digitToInt() }
+    val paths = findPaths(grid)
 
     val unique = paths.map { Pair(it.first(), it.last()) }.toSet()
-    var c = 0
-    unique.groupBy { it.first }.forEach { k, v -> c += v.size }
-    println(c)
+    println(
+        unique.groupBy { it.first }.values.fold(0) { acc, v -> acc + v.size }
+        // 557
+    )
+
+    println(
+        paths.groupBy { it.first() }.values.fold(0) { acc, v -> acc + v.size }
+        // 1062
+    )
 }
 
-fun findPaths(grid: List<String>): List<List<Pair<Int, Int>>> {
-    val rows = grid.size
-    val cols = grid[0].length
-    val matrix = Array(rows) { IntArray(cols) }
+fun findPaths(grid: Grid2d<Int>): List<List<Coord>> {
+    val (xs, ys) = grid.dimensionRanges()
 
-    for (i in 0 until rows) {
-        for (j in 0 until cols) {
-            matrix[i][j] = grid[i][j] - '0'
-        }
-    }
+    val paths = mutableListOf<List<Coord>>()
 
-    val directions = listOf(Pair(-1, 0), Pair(1, 0), Pair(0, -1), Pair(0, 1))
-    val paths = mutableListOf<List<Pair<Int, Int>>>()
+    fun dfs(c: Coord, path: List<Coord>) {
+        val currentVal = grid.getValue(c)
 
-    fun dfs(x: Int, y: Int, path: List<Pair<Int, Int>>) {
-        if (matrix[x][y] == 9) {
+        if (currentVal == 9) {
             paths.add(path)
             return
         }
 
-        val currentVal = matrix[x][y]
-
-        for ((dx, dy) in directions) {
-            val nx = x + dx
-            val ny = y + dy
-
-            if (nx in 0 until rows && ny in 0 until cols && matrix[nx][ny] == currentVal + 1) {
-                dfs(nx, ny, path + listOf(Pair(nx, ny)))
+        for (cn in c.cardinalNeighbors()) {
+            if (cn.x in xs && cn.y in ys && grid[cn] == currentVal + 1) {
+                dfs(cn, path + listOf(cn))
             }
         }
     }
 
-    for (i in 0 until rows) {
-        for (j in 0 until cols) {
-            if (matrix[i][j] == 0) {
-                dfs(i, j, listOf(Pair(i, j)))
+    for (x in xs) {
+        for (y in ys) {
+            val c = Coord(x, y)
+            if (grid[c] == 0) {
+                dfs(c, listOf(c))
             }
         }
     }

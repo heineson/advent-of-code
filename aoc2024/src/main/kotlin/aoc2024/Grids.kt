@@ -105,6 +105,14 @@ open class Grid2d<T>() {
         initData.forEach { data[it.key] = it.value }
     }
 
+    constructor(input: List<String>, cellParser: (cell: Char) -> T) : this() {
+        input.forEachIndexed { y, line ->
+            line.forEachIndexed { x, cell ->
+                data[Coord(x, y)] = cellParser(cell)
+            }
+        }
+    }
+
     private val data = mutableMapOf<Coord, T>()
 
     operator fun set(c: Coord, d: T) {
