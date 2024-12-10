@@ -186,6 +186,27 @@ open class Grid2d<T>() {
 
     override fun toString(): String = printGrid { printElement(it) }
 
+    fun dfs(
+        c: Coord,
+        currentPath: List<Coord> = listOf(c),
+        foundPaths: MutableList<List<Coord>> = mutableListOf(),
+        endCondition: (c: Coord, v: T) -> Boolean,
+        nextNeighbors: (c: Coord, v: T) -> List<Coord> = { coord, _ -> coord.surroundingNeighbors() }
+    ): List<List<Coord>> {
+        val currentVal = this.getValue(c)
+        if (endCondition(c, currentVal)) {
+            foundPaths.add(currentPath)
+        } else {
+            for (cn in nextNeighbors(c, currentVal)) {
+                if (cn !in currentPath) {
+                    dfs(cn, currentPath + cn, foundPaths, endCondition, nextNeighbors)
+                }
+            }
+        }
+
+        return foundPaths
+    }
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is Grid2d<*>) return false

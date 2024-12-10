@@ -24,26 +24,21 @@ fun findPaths(grid: Grid2d<Int>): List<List<Coord>> {
 
     val paths = mutableListOf<List<Coord>>()
 
-    fun dfs(c: Coord, path: List<Coord>) {
-        val currentVal = grid.getValue(c)
-
-        if (currentVal == 9) {
-            paths.add(path)
-            return
-        }
-
-        for (cn in c.cardinalNeighbors()) {
-            if (cn.x in xs && cn.y in ys && grid[cn] == currentVal + 1) {
-                dfs(cn, path + listOf(cn))
-            }
-        }
-    }
-
     for (x in xs) {
         for (y in ys) {
             val c = Coord(x, y)
             if (grid[c] == 0) {
-                dfs(c, listOf(c))
+                paths.addAll(
+                    grid.dfs(
+                        c,
+                        endCondition = { _, v -> v == 9 },
+                        nextNeighbors = { coord, v ->
+                            coord.cardinalNeighbors().filter { n ->
+                                n.x in xs && n.y in ys && grid[n] == v + 1
+                            }
+                        }
+                    )
+                )
             }
         }
     }
