@@ -187,19 +187,19 @@ open class Grid2d<T>() {
     override fun toString(): String = printGrid { printElement(it) }
 
     fun dfs(
-        c: Coord,
-        currentPath: List<Coord> = listOf(c),
+        currentPos: Coord,
+        currentPath: List<Coord> = listOf(currentPos),
         foundPaths: MutableList<List<Coord>> = mutableListOf(),
-        endCondition: (c: Coord, v: T) -> Boolean,
-        nextNeighbors: (c: Coord, v: T) -> List<Coord> = { coord, _ -> coord.surroundingNeighbors() }
+        nextNeighbors: (c: Coord, v: T) -> List<Coord> = { coord, _ -> coord.surroundingNeighbors() },
+        endCondition: (c: Coord, v: T) -> Boolean
     ): List<List<Coord>> {
-        val currentVal = this.getValue(c)
-        if (endCondition(c, currentVal)) {
+        val currentVal = this.getValue(currentPos)
+        if (endCondition(currentPos, currentVal)) {
             foundPaths.add(currentPath)
         } else {
-            for (cn in nextNeighbors(c, currentVal)) {
+            for (cn in nextNeighbors(currentPos, currentVal)) {
                 if (cn !in currentPath) {
-                    dfs(cn, currentPath + cn, foundPaths, endCondition, nextNeighbors)
+                    dfs(cn, currentPath + cn, foundPaths, nextNeighbors, endCondition)
                 }
             }
         }
