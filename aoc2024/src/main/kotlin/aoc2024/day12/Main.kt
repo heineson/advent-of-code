@@ -5,13 +5,8 @@ import aoc2024.Grid2d
 
 fun main() {
     val grid = Grid2d(actualInput) { it }
-    part1(grid) // 1434856
-}
-
-fun part1(grid: Grid2d<Char>) {
     val regions = mutableListOf<Set<Coord>>()
     val visited = mutableSetOf<Coord>()
-
     grid.getCoords().forEach { coord ->
         if (coord !in visited) {
             val region = findRegion(grid, coord)
@@ -19,8 +14,8 @@ fun part1(grid: Grid2d<Char>) {
             visited.addAll(region)
         }
     }
-
-    println(regions.sumOf { calculateSides(it) * it.size })
+    println(regions.sumOf { calculateSides(it) * it.size }) // 1434856
+    println(regions.sumOf { calculateSides2(it) * it.size }) // 891106
 }
 
 fun findRegion(grid: Grid2d<Char>, coord: Coord, region: MutableSet<Coord> = mutableSetOf(coord)): Set<Coord> {
@@ -37,11 +32,58 @@ fun calculateSides(region: Set<Coord>): Int {
         .count { it !in region }
 }
 
-val testInput = """
+enum class Dir { U, L, R, D; }
+
+fun calculateSides2(region: Set<Coord>): Int {
+    val edges = region.filter { c -> !c.cardinalNeighbors().all { it in region } }
+    val fences = mutableListOf<Pair<Coord, Dir>>()
+    edges.forEach { c ->
+        if (c.up() !in region) fences.add(c to Dir.U)
+        if (c.down() !in region) fences.add(c to Dir.D)
+        if (c.left() !in region) fences.add(c to Dir.L)
+        if (c.right() !in region) fences.add(c to Dir.R)
+    }
+
+    fun findLine(i: Pair<Coord, Dir>, line: List<Coord> = listOf(i.first)): List<Coord> {
+        fences.remove(i)
+        val (c, dir) = i
+        val ns = c.cardinalNeighbors().filter { Pair(it, dir) in fences && it !in line }
+
+        if (ns.isEmpty()) return line
+
+        return ns.flatMap { findLine(Pair(it, dir), line + it) }
+    }
+
+    val lines = mutableListOf<List<Coord>>()
+    while (fences.isNotEmpty()) {
+        lines.add(findLine(fences.first()))
+    }
+
+    return lines.size
+}
+
+val testInput1 = """
     AAAA
     BBCD
     BBCC
     EEEC
+""".trimIndent().lines()
+
+val testInput2 = """
+    AAAAAA
+    AAABBA
+    AAABBA
+    ABBAAA
+    ABBAAA
+    AAAAAA
+""".trimIndent().lines()
+
+val testInput = """
+EEEEE
+EXXXX
+EEEEE
+EXXXX
+EEEEE
 """.trimIndent().lines()
 
 val actualInput = """
