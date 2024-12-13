@@ -2,7 +2,7 @@ package aoc2024.day13
 
 import aoc2024.readLinesIntoTokens
 
-data class Machine(val ax: Int, val ay: Int, val bx: Int, val by: Int, val px: Int, val py: Int)
+data class Machine(val ax: Long, val ay: Long, val bx: Long, val by: Long, val px: Long, val py: Long)
 
 const val aPrice = 3
 const val bPrice = 1
@@ -10,32 +10,31 @@ const val bPrice = 1
 fun main() {
     val p = readLinesIntoTokens(actualInput, tokenSeparator = "\n")
     val machines = p.map {
-        val ax = it[0].substringAfter("X+").substringBefore(",").toInt()
-        val ay = it[0].substringAfter("Y+").substringBefore(",").toInt()
-        val bx = it[1].substringAfter("X+").substringBefore(",").toInt()
-        val by = it[1].substringAfter("Y+").substringBefore(",").toInt()
-        val px = it[2].substringAfter("X=").substringBefore(",").toInt()
-        val py = it[2].substringAfter("Y=").substringBefore(",").toInt()
+        val ax = it[0].substringAfter("X+").substringBefore(",").toLong()
+        val ay = it[0].substringAfter("Y+").substringBefore(",").toLong()
+        val bx = it[1].substringAfter("X+").substringBefore(",").toLong()
+        val by = it[1].substringAfter("Y+").substringBefore(",").toLong()
+        val px = it[2].substringAfter("X=").substringBefore(",").toLong()
+        val py = it[2].substringAfter("Y=").substringBefore(",").toLong()
         Machine(ax, ay, bx, by, px, py)
     }
 
-    part1(machines) // 29877
+    println(machines.sumOf { play1(it) }) // 29877
+    println(machines.map {
+        it.copy(px = it.px + 10000000000000L, py = it.py + 10000000000000L)
+    }.sumOf { play2(it) }) // 99423413811305
 }
 
-fun part1(machines: List<Machine>) {
-    println(machines.sumOf { play(it) })
-}
+fun play1(m: Machine): Long {
+    var currentLowest = Long.MAX_VALUE
+    val memo = mutableMapOf<Triple<Long, Long, Long>, Long>()
 
-fun play(m: Machine): Int {
-    var currentLowest = Int.MAX_VALUE
-    val memo = mutableMapOf<Triple<Int, Int, Int>, Int>()
-
-    fun loop(cx: Int, cy: Int, cp: Int): Int {
+    fun loop(cx: Long, cy: Long, cp: Long): Long {
         if (cx == m.px && cy == m.py) {
             currentLowest = cp
             return cp
         }
-        if (cp > currentLowest || cx > m.px || cy > m.py) return Int.MAX_VALUE
+        if (cp > currentLowest || cx > m.px || cy > m.py) return Long.MAX_VALUE
 
         val key = Triple(cx, cy, cp)
         if (key in memo) return memo[key]!!
@@ -49,8 +48,32 @@ fun play(m: Machine): Int {
     }
 
     val res = loop(0, 0, 0)
-    if (res == Int.MAX_VALUE) return 0
+    if (res == Long.MAX_VALUE) return 0
     return res
+}
+
+fun play2(m: Machine): Long {
+    fun isPositiveInteger(x: Double): Boolean = x > 0.0 && x - x.toLong() == 0.0
+    fun solveEquation(ax: Double, ay: Double, bx: Double, by: Double, px: Double, py: Double): Long {
+        // k1 * ax + k2 * bx = px
+        // k1 * ay + k2 * by = py
+        val k1 = (px * ay - py * ax) / (ay * bx - ax * by)
+        val k2 = (py - k1 * by) / ay
+
+        if (isPositiveInteger(k1) && isPositiveInteger(k2)) {
+            return aPrice * k2.toLong() + bPrice * k1.toLong()
+        }
+        return 0
+    }
+
+    return solveEquation(
+        m.ax.toDouble(),
+        m.ay.toDouble(),
+        m.bx.toDouble(),
+        m.by.toDouble(),
+        m.px.toDouble(),
+        m.py.toDouble(),
+    )
 }
 
 val testInput = """

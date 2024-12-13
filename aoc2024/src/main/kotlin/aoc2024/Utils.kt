@@ -71,10 +71,16 @@ fun <E> MutableMap<E, Long>.mutableInc(key: E, valueToAdd: Long) {
 
 // Greatest common divisor
 tailrec fun gcd(a: Int, b: Int): Int = if (b == 0) a else gcd(b, a % b)
+tailrec fun gcd(a: Long, b: Long): Long = if (b == 0L) a else gcd(b, a % b)
 fun gcd(ints: Collection<Int>): Int = ints.reduce { a, b -> gcd(a, b) }
+fun gcd(longs: Collection<Long>): Long = longs.reduce { a, b -> gcd(a, b) }
 fun List<Int>.gcd(): Int = gcd(this)
+fun List<Long>.gcd(): Long = gcd(this)
 
 // Least common multiple
 fun lcm(a: Int, b: Int): Int = abs(a * b) / gcd(a, b)
+fun lcm(a: Long, b: Long): Long = abs(a * b) / gcd(a, b)
 fun lcm(ints: Collection<Int>): Int = ints.reduce { a, b -> lcm(a, b) }
+fun lcm(longs: Collection<Long>): Long = longs.reduce { a, b -> lcm(a, b) }
 fun List<Int>.lcm(): Int = lcm(this)
+fun List<Long>.lcm(): Long = lcm(this)
