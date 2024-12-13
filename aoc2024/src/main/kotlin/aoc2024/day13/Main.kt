@@ -2,9 +2,55 @@ package aoc2024.day13
 
 import aoc2024.readLinesIntoTokens
 
+data class Machine(val ax: Int, val ay: Int, val bx: Int, val by: Int, val px: Int, val py: Int)
+
+const val aPrice = 3
+const val bPrice = 1
+
 fun main() {
-    val p = readLinesIntoTokens(testInput, tokenSeparator = ": ")
-    p.forEach { it.forEach(::println) }
+    val p = readLinesIntoTokens(actualInput, tokenSeparator = "\n")
+    val machines = p.map {
+        val ax = it[0].substringAfter("X+").substringBefore(",").toInt()
+        val ay = it[0].substringAfter("Y+").substringBefore(",").toInt()
+        val bx = it[1].substringAfter("X+").substringBefore(",").toInt()
+        val by = it[1].substringAfter("Y+").substringBefore(",").toInt()
+        val px = it[2].substringAfter("X=").substringBefore(",").toInt()
+        val py = it[2].substringAfter("Y=").substringBefore(",").toInt()
+        Machine(ax, ay, bx, by, px, py)
+    }
+
+    part1(machines) // 29877
+}
+
+fun part1(machines: List<Machine>) {
+    println(machines.sumOf { play(it) })
+}
+
+fun play(m: Machine): Int {
+    var currentLowest = Int.MAX_VALUE
+    val memo = mutableMapOf<Triple<Int, Int, Int>, Int>()
+
+    fun loop(cx: Int, cy: Int, cp: Int): Int {
+        if (cx == m.px && cy == m.py) {
+            currentLowest = cp
+            return cp
+        }
+        if (cp > currentLowest || cx > m.px || cy > m.py) return Int.MAX_VALUE
+
+        val key = Triple(cx, cy, cp)
+        if (key in memo) return memo[key]!!
+
+        val result = minOf(
+            loop(cx + m.ax, cy + m.ay, cp + aPrice),
+            loop(cx + m.bx, cy + m.by, cp + bPrice)
+        )
+        memo[key] = result
+        return result
+    }
+
+    val res = loop(0, 0, 0)
+    if (res == Int.MAX_VALUE) return 0
+    return res
 }
 
 val testInput = """
