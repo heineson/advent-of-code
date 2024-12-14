@@ -113,6 +113,14 @@ open class Grid2d<T>() {
         }
     }
 
+    constructor(width: Int, height: Int, initVal: T) : this() {
+        for (x in (0 until width)) {
+            for (y in (0 until height)) {
+                data[Coord(x, y)] = initVal
+            }
+        }
+    }
+
     private val data = mutableMapOf<Coord, T>()
 
     operator fun set(c: Coord, d: T) {
