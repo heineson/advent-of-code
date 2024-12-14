@@ -1,28 +1,21 @@
 package aoc2024.day14
 
 import aoc2024.Coord
+import aoc2024.Grid2d
 import aoc2024.Vect
 
 data class Robot(val p: Coord, val v: Vect) {
-
     fun update(w: Int, h: Int): Robot {
-        var newP = p + v
-        if (newP.x !in 0 until w) {
-            newP = if (newP.x > 0) {
-                newP.copy(x = newP.x - w)
-            }
-            else {
-                newP.copy(x = newP.x + w)
+        fun wrap(c: Int, limit: Int): Int {
+            return when {
+                c >= limit -> c - limit
+                c < 0 -> c + limit
+                else -> c
             }
         }
-        if (newP.y !in 0 until h) {
-            newP = if (newP.y > 0) {
-                newP.copy(y = newP.y - h)
-            } else {
-                newP.copy(y = newP.y + h)
-            }
-        }
-        return Robot(newP, v)
+
+        val newP = p + v
+        return Robot(Coord(wrap(newP.x, w), wrap(newP.y, h)), v)
     }
 }
 
@@ -35,6 +28,7 @@ fun main() {
 
     part1(testRobots, 11, 7)
     part1(realRobots, 101, 103) // 217132650
+    part2(realRobots, 101, 103) // 6516
 }
 
 fun part1(robots: List<Robot>, w: Int, h: Int) {
@@ -53,6 +47,32 @@ fun part1(robots: List<Robot>, w: Int, h: Int) {
     val q4 = state.filter { it.p.x > qx && it.p.y > qy }
 
     println("Part 1: ${q1.size * q2.size * q3.size * q4.size}")
+}
+
+fun part2(robots: List<Robot>, w: Int, h: Int) {
+    fun isTree(state: List<Robot>): Boolean {
+        return state.map { it.p }.any { p ->
+            state.any { it.p.y == p.y + 1 && it.p.x == p.x - 1 } &&
+                    state.any { it.p.y == p.y + 1 && it.p.x == p.x + 1 } &&
+                    state.any { it.p.y == p.y + 1 && it.p.x == p.x } &&
+                    state.any { it.p.y == p.y + 2 && it.p.x == p.x - 2 } &&
+                    state.any { it.p.y == p.y + 2 && it.p.x == p.x + 2 } &&
+                    state.any { it.p.y == p.y + 3 && it.p.x == p.x - 3 } &&
+                    state.any { it.p.y == p.y + 3 && it.p.x == p.x + 3 }
+        }
+    }
+
+    var state = robots
+    for (i in 1 until 1_000_000) {
+        state = state.map { it.update(w, h) }
+        if (isTree(state)) {
+            println("After $i iterations:")
+            val g = Grid2d(w, h, ' ')
+            state.forEach { g[it.p] = '#' }.also { println(g) }
+            break
+        }
+    }
+
 }
 
 val testData = """
