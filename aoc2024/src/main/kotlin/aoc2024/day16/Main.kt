@@ -11,13 +11,11 @@ enum class Direction {
 }
 
 fun main() {
-//    testData.let { data ->
-//        val grid = Grid2d(data) { it }
-//        println("Part 1: ${part1(grid)}")
-//    }
     actualData.let { data ->
         val grid = Grid2d(data) { it }
-        println("Part 1: ${part1(grid)}") // 115500
+        val part1 = part1(grid)
+        println("Part 1: $part1") // 115500
+        println("Part 2: ${part2(grid, part1)}") // 679
     }
 }
 
@@ -28,14 +26,14 @@ fun part1(grid: Grid2d<Char>): Int {
 
     val queue: ArrayDeque<State> = ArrayDeque()
     val visited = mutableMapOf<Coord, Int>()
-    queue.add(State(start, Direction.EAST, 0))
-
     var currentLowest = Int.MAX_VALUE
+
+    queue.add(State(start, Direction.EAST, 0))
 
     while (queue.isNotEmpty()) {
         val (currentPos, currentDir, currentCost) = queue.removeFirst()
 
-        if (currentCost >= currentLowest) continue
+        if (currentCost > currentLowest) continue
 
         if (grid.getValue(currentPos) == 'E') {
             currentLowest = minOf(currentLowest, currentCost)
@@ -52,11 +50,47 @@ fun part1(grid: Grid2d<Char>): Int {
         }
     }
 
-    val g = grid.copy()
-    visited.keys.forEach { g[it] = 'x'}
-    println(g)
-
     return currentLowest
+}
+
+fun part2(grid: Grid2d<Char>, optimalCost: Int): Int {
+    val start = grid.getCoords().first { grid[it] == 'S' }
+
+    data class State(val position: Coord, val direction: Direction, val cost: Int, val path: List<Coord>)
+
+    val queue = ArrayDeque<State>()
+    val visited = mutableMapOf<Pair<Coord, Direction>, Int>()
+    val optimalPaths = mutableListOf<List<Coord>>()
+
+    queue.add(State(start, Direction.EAST, 0, listOf(start)))
+
+    while (queue.isNotEmpty()) {
+        val (currentPos, currentDir, currentCost, currentPath) = queue.removeFirst()
+
+        if (currentCost > optimalCost) continue
+
+        if (grid.getValue(currentPos) == 'E') {
+            optimalPaths.add(currentPath)
+            continue
+        }
+
+        val stateKey = currentPos to currentDir
+        if (visited[stateKey]?.let { it < currentCost } == true) continue
+        visited[stateKey] = currentCost
+
+        val ns = grid.cardinalNeighborsWithinLimits(currentPos) { grid[it] != '#' && it !in currentPath }
+
+        for (n in ns) {
+            val newDir = turn(currentPos, n, currentDir) ?: currentDir
+            val nextCost = if (newDir != currentDir) currentCost + 1001 else currentCost + 1
+            queue.add(State(n, newDir, nextCost, currentPath + n))
+        }
+    }
+
+//    optimalPaths.flatten().forEach { grid[it] = 'O'}
+//    println(g)
+
+    return optimalPaths.flatten().toSet().size
 }
 
 fun turn(currentPos: Coord, nextPos: Coord, currentDir: Direction): Direction? {
