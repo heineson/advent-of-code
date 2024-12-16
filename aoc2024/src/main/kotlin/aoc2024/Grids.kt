@@ -154,11 +154,11 @@ open class Grid2d<T>() {
         )
     }
 
-    fun cardinalNeighborsWithinLimits(c: Coord): List<Coord> {
+    fun cardinalNeighborsWithinLimits(c: Coord, filter: (co: Coord) -> Boolean = { true }): List<Coord> {
         val (xr, yr) = dimensionRanges()
         return c.cardinalNeighbors().filter {
             it.x >= xr.first && it.y >= yr.first && it.x <= xr.last && it.y <= yr.last
-        }
+        }.filter(filter)
     }
 
     fun surroundingNeighborsWithinLimits(c: Coord, filter: (co: Coord) -> Boolean = { true }): List<Coord> {
@@ -199,10 +199,13 @@ open class Grid2d<T>() {
         currentPath: List<Coord> = listOf(currentPos),
         foundPaths: MutableList<List<Coord>> = mutableListOf(),
         nextNeighbors: (c: Coord, v: T) -> List<Coord> = { coord, _ -> coord.surroundingNeighbors() },
-        endCondition: (c: Coord, v: T) -> Boolean
+        endCondition: (c: Coord, v: T) -> Boolean,
+        breakCondition: (c: Coord, v: T) -> Boolean = { _, _ -> false }
     ): List<List<Coord>> {
         val currentVal = this.getValue(currentPos)
-        if (endCondition(currentPos, currentVal)) {
+        if (breakCondition(currentPos, currentVal)) {
+            // do nothing
+        } else if (endCondition(currentPos, currentVal)) {
             foundPaths.add(currentPath)
         } else {
             for (cn in nextNeighbors(currentPos, currentVal)) {
