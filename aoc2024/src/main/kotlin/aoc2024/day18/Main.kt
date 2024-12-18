@@ -2,16 +2,20 @@ package aoc2024.day18
 
 import aoc2024.Coord
 import aoc2024.Grid2d
+import java.util.stream.IntStream.range
+import kotlin.streams.toList
 
 fun main() {
     testData.let { lines ->
         val coords = lines.map { line -> line.split(",").map { it.toInt() } }.map { Coord(it[0], it[1]) }
-        println("Part 1 test: ${part1(coords, 7, 12)}")
+        println("Part 1 test: ${part1(coords, 7, 15)}")
+        println("Part 2 test: ${part2(coords, 7, 15)}")
     }
 
     actualData.let { lines ->
         val coords = lines.map { line -> line.split(",").map { it.toInt() } }.map { Coord(it[0], it[1]) }
         println("Part 1: ${part1(coords, 71, 1024)}") // 286
+        println("Part 2: ${part2(coords, 71, 1024)}") // 20,64
     }
 }
 
@@ -42,6 +46,14 @@ fun part1(coords: List<Coord>, size: Int, bytes: Int): Int {
     }
 
     return -1
+}
+
+fun part2(coords: List<Coord>, size: Int, skip: Int): Coord? {
+    val list = range(skip + 1, coords.size).parallel().takeWhile {
+        val res = part1(coords, size, it)
+        res != -1
+    }.toList()
+    return list.lastOrNull()?.let { coords[it] }
 }
 
 val testData = """
