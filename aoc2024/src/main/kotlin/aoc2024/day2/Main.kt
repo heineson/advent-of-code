@@ -1,10 +1,9 @@
 package aoc2024.day2
 
-import aoc2024.parseLines
 import kotlin.math.abs
 
 fun main() {
-    val reports = parseLines(actualInput) { it.split(" ").map { v -> v.toInt() } }
+    val reports = actualInput.map { it.split(" ").map { v -> v.toInt() } }
 
     val res = reports
         .filter { it.sorted() == it || it.sortedDescending() == it }

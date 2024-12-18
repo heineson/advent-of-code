@@ -3,14 +3,8 @@ package aoc2024
 import java.io.File
 import kotlin.math.abs
 
-/****** Input data utils *******/
-
-fun <T> parseLines(lines: List<String>, lineParser: (line: String) -> T): List<T> {
-    return lines.map { lineParser(it) }
-}
-
 fun <T> readFile(filename: String = "./data.txt", lineParser: (line: String) -> T): List<T> {
-    return parseLines(File(filename).readLines(), lineParser)
+    return File(filename).readLines().map { lineParser(it) }
 }
 
 fun readLinesIntoTokens(lines: List<String>, groupSeparatorLine: String = "", tokenSeparator: String = " ", tokenSeparatorRegex: Regex? = null, trimLines: Boolean = false): List<List<String>> {
