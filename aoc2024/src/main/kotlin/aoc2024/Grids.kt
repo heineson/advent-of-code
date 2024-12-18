@@ -83,7 +83,7 @@ data class Vect(val dx: Int, val dy: Int) {
     operator fun plus(other: Vect): Vect = Vect(this.dx + other.dx, this.dy + other.dy)
     operator fun times(v: Int): Vect = Vect(dx * v, dy * v)
 
-    fun length(): Double = sqrt(this.dx.toDouble()*this.dx + this.dy*this.dy)
+    fun length(): Double = sqrt(this.dx.toDouble() * this.dx + this.dy * this.dy)
 
     fun rotate90(d: Rotation, steps: Int = 1): Vect {
         return when (steps % 4) {
@@ -200,10 +200,10 @@ open class Grid2d<T>() {
         foundPaths: MutableList<List<Coord>> = mutableListOf(),
         nextNeighbors: (c: Coord, v: T) -> List<Coord> = { coord, _ -> coord.surroundingNeighbors() },
         endCondition: (c: Coord, v: T) -> Boolean,
-        breakCondition: (c: Coord, v: T) -> Boolean = { _, _ -> false }
+        breakCondition: (c: Coord, v: T, currentPath: List<Coord>, foundPaths: List<List<Coord>>) -> Boolean = { _, _, _, _ -> false }
     ): List<List<Coord>> {
         val currentVal = this.getValue(currentPos)
-        if (breakCondition(currentPos, currentVal)) {
+        if (breakCondition(currentPos, currentVal, currentPath, foundPaths)) {
             // do nothing
         } else if (endCondition(currentPos, currentVal)) {
             foundPaths.add(currentPath)
@@ -237,9 +237,9 @@ open class Grid2d<T>() {
 data class Coord3(val x: Int, val y: Int, val z: Int) {
     fun surroundingNeighbors(): List<Coord3> {
         val coords = mutableListOf<Coord3>()
-        for (xi in x-1..x+1) {
-            for (yi in y-1..y+1) {
-                for (zi in z-1..z+1) {
+        for (xi in x - 1..x + 1) {
+            for (yi in y - 1..y + 1) {
+                for (zi in z - 1..z + 1) {
                     if (!(xi == x && yi == y && zi == z)) {
                         coords.add(Coord3(xi, yi, zi))
                     }
@@ -255,10 +255,10 @@ data class Coord3(val x: Int, val y: Int, val z: Int) {
 data class Coord4(val x: Int, val y: Int, val z: Int, val w: Int) {
     fun surroundingNeighbors(): List<Coord4> {
         val coords = mutableListOf<Coord4>()
-        for (xi in x-1..x+1) {
-            for (yi in y-1..y+1) {
-                for (zi in z-1..z+1) {
-                    for (wi in w-1..w+1) {
+        for (xi in x - 1..x + 1) {
+            for (yi in y - 1..y + 1) {
+                for (zi in z - 1..z + 1) {
+                    for (wi in w - 1..w + 1) {
                         if (!(xi == x && yi == y && zi == z && wi == w)) {
                             coords.add(Coord4(xi, yi, zi, wi))
                         }
