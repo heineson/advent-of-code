@@ -6,38 +6,58 @@ fun main() {
         val designs = data.drop(2)
 
         println("Part1: ${part1(patterns, designs)}") // 322
+        println("Part2: ${part2(patterns, designs)}") // 715514563508258
     }
 }
 
-fun part1(ps: Set<String>, ds: List<String>): Int {
-    return ds.map { validateDesign(it, ps) }.filter { it }.size
-}
+fun part1(patterns: Set<String>, ds: List<String>): Int {
+    fun validateDesign(design: String): Boolean {
+        val memo = mutableMapOf<String, Boolean>()
 
-fun validateDesign(design: String, patterns: Set<String>): Boolean {
-    val memo = mutableMapOf<String, Boolean>()
+        fun loop(remainingDesign: String): Boolean {
+            if (remainingDesign.isEmpty()) return true
 
-    fun loop(remainingDesign: String): Boolean {
-        if (remainingDesign.isEmpty()) return true
+            if (memo.containsKey(remainingDesign)) {
+                return memo[remainingDesign]!!
+            }
 
-        if (memo.containsKey(remainingDesign)) {
-            return memo[remainingDesign]!!
+            for (pattern in patterns) {
+                if (remainingDesign.startsWith(pattern)) {
+                    val subDesign = remainingDesign.drop(pattern.length)
+                    if (loop(subDesign)) {
+                        memo[remainingDesign] = true
+                        return true
+                    }
+                }
+            }
+
+            memo[remainingDesign] = false
+            return false
         }
 
-        for (pattern in patterns) {
-            if (remainingDesign.startsWith(pattern)) {
-                val subDesign = remainingDesign.drop(pattern.length)
-                if (loop(subDesign)) {
-                    memo[remainingDesign] = true
-                    return true
+        return loop(design)
+    }
+
+    return ds.map { validateDesign(it) }.filter { it }.size
+}
+
+fun part2(patterns: Set<String>, ds: List<String>): Long {
+    fun countCombinations(design: String): Long {
+        val sublistCounts = MutableList(design.length + 1) { 0L }
+        sublistCounts[0] = 1
+
+        for (i in 1..design.length) {
+            for (pattern in patterns) {
+                if (i >= pattern.length && design.substring(i - pattern.length, i) == pattern) {
+                    sublistCounts[i] = sublistCounts[i] + sublistCounts[i - pattern.length]
                 }
             }
         }
 
-        memo[remainingDesign] = false
-        return false
+        return sublistCounts.last()
     }
 
-    return loop(design)
+    return ds.sumOf { countCombinations(it) }
 }
 
 val testData = """
